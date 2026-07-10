@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>首爾地鐵圖</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --warning: #f59e0b;
+      --shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .page {
+      width: min(1200px, calc(100vw - 24px));
+      margin: 16px auto 28px;
+    }
+
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: clamp(1.25rem, 2.5vw, 1.8rem);
+      margin: 0;
+    }
+
+    h2 {
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+      margin: 0;
+    }
+
+    .hint {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .quick-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+
+    .quick-nav a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      transition: 0.15s ease;
+    }
+
+    .quick-nav a:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .map-card {
+      margin-bottom: 24px;
+      scroll-margin-top: 12px;
+    }
+
+    .map-title-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 0 0 8px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      padding: 9px 13px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: 0.15s ease;
+    }
+
+    button:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    button.primary:hover {
+      background: var(--primary-dark);
+      border-color: var(--primary-dark);
+      color: #fff;
+    }
+
+    button.toggle-on {
+      background: var(--warning);
+      color: #111827;
+      border-color: var(--warning);
+      font-weight: 700;
+    }
+
+    .map-frame {
+      width: 100%;
+      height: min(76vh, 820px);
+      min-height: 420px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+      touch-action: pan-y;
+      user-select: none;
+    }
+
+    .map-frame.interactive { touch-action: none; }
+
+    .map-stage {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .map-image {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      max-width: none;
+      max-height: none;
+      height: auto;
+      transform: translate(-50%, -50%);
+      transform-origin: center center;
+      will-change: left, top, width;
+      cursor: default;
+      -webkit-user-drag: none;
+      user-select: none;
+      image-rendering: auto;
+    }
+
+    .map-frame.interactive .map-image { cursor: grab; }
+    .map-image.dragging { cursor: grabbing; }
+
+    .status {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .lock-notice {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .map-frame.interactive .lock-notice {
+      color: #92400e;
+      border-color: #fbbf24;
+    }
+
+    @media (max-width: 768px) {
+      .page {
+        width: calc(100vw - 16px);
+        margin: 8px auto 20px;
+      }
+
+      .header,
+      .map-title-row {
+        align-items: flex-start;
+      }
+
+      .toolbar {
+        width: 100%;
+      }
+
+      .toolbar button {
+        flex: 1;
+        padding: 10px 8px;
+      }
+
+      .quick-nav a {
+        flex: 1;
+        min-width: 30%;
+        padding: 9px 8px;
+      }
+
+      .map-frame {
+        height: calc(100vh - 170px);
+        min-height: 360px;
+        border-radius: 12px;
+      }
+
+      .hint { font-size: 0.85rem; }
+
+      .lock-notice {
+        left: 72px;
+        right: 12px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="header">
+      <div>
+        <h1>首爾地鐵圖</h1>
+        <p class="hint">清晰版：改用實際圖片寬度縮放，避免 iPhone Safari / Chrome 將 CSS transform 放大後變模糊。會記住每張地圖上一次縮放與拖曳位置。</p>
+      </div>
+    </div>
+
+    <nav class="quick-nav" aria-label="快速切換地圖">
+      <a href="#map1">中文地圖</a>
+      <a href="#map2">英文地圖</a>
+      <a href="#map3">韓英地圖</a>
+    </nav>
+
+    <section class="map-card" id="map1">
+      <div class="map-title-row">
+        <div>
+          <h2>中文地圖</h2>
+          <p class="hint">圖片檔案：map1.jpg</p>
+        </div>
+        <div class="toolbar">
+          <button type="button" data-action="toggle" data-map="map1">啟用操作</button>
+          <button type="button" data-action="zoomOut" data-map="map1">縮小</button>
+          <button type="button" data-action="reset" data-map="map1" class="primary">重設</button>
+          <button type="button" data-action="zoomIn" data-map="map1">放大</button>
+        </div>
+      </div>
+      <div class="map-frame" data-map="map1">
+        <div class="map-stage">
+          <img src="map1.jpg" alt="首爾地鐵中文地圖" class="map-image" data-map="map1" draggable="false" />
+        </div>
+        <div class="status" data-map="map1">200%</div>
+        <div class="lock-notice" data-map="map1">地圖操作鎖定中，可正常向下滑動</div>
+      </div>
+    </section>
+
+    <section class="map-card" id="map2">
+      <div class="map-title-row">
+        <div>
+          <h2>英文地圖</h2>
+          <p class="hint">圖片檔案：map2en.jpg</p>
+        </div>
+        <div class="toolbar">
+          <button type="button" data-action="toggle" data-map="map2">啟用操作</button>
+          <button type="button" data-action="zoomOut" data-map="map2">縮小</button>
+          <button type="button" data-action="reset" data-map="map2" class="primary">重設</button>
+          <button type="button" data-action="zoomIn" data-map="map2">放大</button>
+        </div>
+      </div>
+      <div class="map-frame" data-map="map2">
+        <div class="map-stage">
+          <img src="map2en.jpg" alt="首爾地鐵英文地圖" class="map-image" data-map="map2" draggable="false" />
+        </div>
+        <div class="status" data-map="map2">200%</div>
+        <div class="lock-notice" data-map="map2">地圖操作鎖定中，可正常向下滑動</div>
+      </div>
+    </section>
+
+    <section class="map-card" id="map3">
+      <div class="map-title-row">
+        <div>
+          <h2>韓英地圖</h2>
+          <p class="hint">圖片檔案：map2enkr.jpg</p>
+        </div>
+        <div class="toolbar">
+          <button type="button" data-action="toggle" data-map="map3">啟用操作</button>
+          <button type="button" data-action="zoomOut" data-map="map3">縮小</button>
+          <button type="button" data-action="reset" data-map="map3" class="primary">重設</button>
+          <button type="button" data-action="zoomIn" data-map="map3">放大</button>
+        </div>
+      </div>
+      <div class="map-frame" data-map="map3">
+        <div class="map-stage">
+          <img src="map2enkr.jpg" alt="首爾地鐵韓英地圖" class="map-image" data-map="map3" draggable="false" />
+        </div>
+        <div class="status" data-map="map3">200%</div>
+        <div class="lock-notice" data-map="map3">地圖操作鎖定中，可正常向下滑動</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const defaultZoom = 2;
+    const minZoom = 1;
+    const maxZoom = 8;
+    const step = 0.25;
+    const storagePrefix = "seoulMetroMapState_crisp_v1_";
+    const maps = {};
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function safeLoadState(id) {
+      try {
+        const raw = localStorage.getItem(storagePrefix + id);
+        if (!raw) return null;
+        const state = JSON.parse(raw);
+        if (
+          typeof state.zoom !== "number" ||
+          typeof state.translateX !== "number" ||
+          typeof state.translateY !== "number"
+        ) return null;
+
+        return {
+          zoom: clamp(state.zoom, minZoom, maxZoom),
+          translateX: state.translateX,
+          translateY: state.translateY
+        };
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function saveState(id) {
+      const map = maps[id];
+      try {
+        localStorage.setItem(storagePrefix + id, JSON.stringify({
+          zoom: map.zoom,
+          translateX: map.translateX,
+          translateY: map.translateY
+        }));
+      } catch (error) {}
+    }
+
+    function getFitScale(map) {
+      const rect = map.frame.getBoundingClientRect();
+      const naturalW = map.img.naturalWidth || 1;
+      const naturalH = map.img.naturalHeight || 1;
+      return Math.min(rect.width / naturalW, rect.height / naturalH);
+    }
+
+    function updateView(id, shouldSave = true) {
+      const map = maps[id];
+      const fitScale = getFitScale(map);
+      const displayWidth = Math.round(map.img.naturalWidth * fitScale * map.zoom);
+
+      map.img.style.width = `${displayWidth}px`;
+      map.img.style.left = `calc(50% + ${Math.round(map.translateX)}px)`;
+      map.img.style.top = `calc(50% + ${Math.round(map.translateY)}px)`;
+      map.status.textContent = `${Math.round(map.zoom * 100)}%`;
+
+      if (shouldSave) saveState(id);
+    }
+
+    function setInteractive(id, enabled) {
+      const map = maps[id];
+      map.interactive = enabled;
+      map.frame.classList.toggle("interactive", enabled);
+      map.toggleButton.textContent = enabled ? "鎖定操作" : "啟用操作";
+      map.toggleButton.classList.toggle("toggle-on", enabled);
+      map.notice.textContent = enabled ? "地圖操作啟用中，拖曳/縮放會攔截頁面滑動" : "地圖操作鎖定中，可正常向下滑動";
+
+      map.isDragging = false;
+      map.activePointers.clear();
+      map.img.classList.remove("dragging");
+    }
+
+    function zoomTo(id, newZoom, centerX, centerY) {
+      const map = maps[id];
+      const oldZoom = map.zoom;
+      newZoom = clamp(newZoom, minZoom, maxZoom);
+      if (newZoom === oldZoom) return;
+
+      const rect = map.frame.getBoundingClientRect();
+      const offsetX = centerX - rect.left - rect.width / 2;
+      const offsetY = centerY - rect.top - rect.height / 2;
+
+      map.translateX -= offsetX * (newZoom / oldZoom - 1);
+      map.translateY -= offsetY * (newZoom / oldZoom - 1);
+
+      map.zoom = newZoom;
+      updateView(id);
+    }
+
+    function resetMap(id) {
+      const map = maps[id];
+      map.zoom = defaultZoom;
+      map.translateX = 0;
+      map.translateY = 0;
+      updateView(id);
+    }
+
+    document.querySelectorAll(".map-frame").forEach((frame) => {
+      const id = frame.dataset.map;
+      const saved = safeLoadState(id);
+
+      maps[id] = {
+        frame,
+        img: document.querySelector(`.map-image[data-map="${id}"]`),
+        status: document.querySelector(`.status[data-map="${id}"]`),
+        notice: document.querySelector(`.lock-notice[data-map="${id}"]`),
+        toggleButton: document.querySelector(`button[data-action="toggle"][data-map="${id}"]`),
+        zoom: saved ? saved.zoom : defaultZoom,
+        translateX: saved ? saved.translateX : 0,
+        translateY: saved ? saved.translateY : 0,
+        interactive: false,
+        isDragging: false,
+        lastX: 0,
+        lastY: 0,
+        activePointers: new Map(),
+        pinchStartDistance: 0,
+        pinchStartZoom: saved ? saved.zoom : defaultZoom
+      };
+    });
+
+    document.querySelectorAll("button[data-action]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const id = button.dataset.map;
+        const action = button.dataset.action;
+        const map = maps[id];
+        const rect = map.frame.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        if (action === "toggle") setInteractive(id, !map.interactive);
+        if (action === "zoomIn") zoomTo(id, map.zoom + step, centerX, centerY);
+        if (action === "zoomOut") zoomTo(id, map.zoom - step, centerX, centerY);
+        if (action === "reset") resetMap(id);
+      });
+    });
+
+    Object.values(maps).forEach((map) => {
+      const id = map.frame.dataset.map;
+
+      map.frame.addEventListener("wheel", (event) => {
+        if (!map.interactive) return;
+        event.preventDefault();
+        const direction = event.deltaY < 0 ? 1 : -1;
+        zoomTo(id, map.zoom + direction * step, event.clientX, event.clientY);
+      }, { passive: false });
+
+      map.frame.addEventListener("pointerdown", (event) => {
+        if (!map.interactive) return;
+
+        map.frame.setPointerCapture(event.pointerId);
+        map.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+        if (map.activePointers.size === 1) {
+          map.isDragging = true;
+          map.lastX = event.clientX;
+          map.lastY = event.clientY;
+          map.img.classList.add("dragging");
+        }
+
+        if (map.activePointers.size === 2) {
+          const points = [...map.activePointers.values()];
+          map.pinchStartDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+          map.pinchStartZoom = map.zoom;
+        }
+      });
+
+      map.frame.addEventListener("pointermove", (event) => {
+        if (!map.interactive) return;
+        if (!map.activePointers.has(event.pointerId)) return;
+
+        map.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+        if (map.activePointers.size === 2) {
+          const points = [...map.activePointers.values()];
+          const currentDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+
+          if (map.pinchStartDistance > 0) {
+            const centerX = (points[0].x + points[1].x) / 2;
+            const centerY = (points[0].y + points[1].y) / 2;
+            zoomTo(id, map.pinchStartZoom * (currentDistance / map.pinchStartDistance), centerX, centerY);
+          }
+          return;
+        }
+
+        if (!map.isDragging) return;
+
+        const dx = event.clientX - map.lastX;
+        const dy = event.clientY - map.lastY;
+
+        map.translateX += dx;
+        map.translateY += dy;
+
+        map.lastX = event.clientX;
+        map.lastY = event.clientY;
+
+        updateView(id);
+      });
+
+      function endPointer(event) {
+        map.activePointers.delete(event.pointerId);
+
+        if (map.activePointers.size === 0) {
+          map.isDragging = false;
+          map.img.classList.remove("dragging");
+          saveState(id);
+        }
+
+        if (map.activePointers.size < 2) {
+          map.pinchStartDistance = 0;
+        }
+      }
+
+      map.frame.addEventListener("pointerup", endPointer);
+      map.frame.addEventListener("pointercancel", endPointer);
+      map.frame.addEventListener("pointerleave", endPointer);
+
+      map.img.addEventListener("load", () => updateView(id, true));
+      if (map.img.complete) updateView(id, false);
+    });
+
+    window.addEventListener("resize", () => {
+      Object.keys(maps).forEach((id) => updateView(id, false));
+    });
+  </script>
+</body>
+</html>
