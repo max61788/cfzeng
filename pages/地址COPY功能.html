@@ -1,0 +1,126 @@
+<!doctype html>
+
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>地址文字複製</title>
+  <style>
+    table{border-collapse:collapse;width:100%}
+    th,td{border:1px solid #e2e8f0;padding:8px 10px;vertical-align:top;cursor:pointer}
+    th{background:#f1f5f9;text-align:left;cursor:default}
+	td{cursor:pointer}
+    .copied{background:#d1fae5 !important;transition:background 0.6s}
+  </style>
+</head>
+
+
+
+<body>
+<!-- □ 關鍵字搜尋工具列（可多關鍵字，以空白分隔） -->
+<div class="toolbar" role="region" aria-label="關鍵字搜尋工具列">
+  <label class="sr-only" for="kw">搜尋:</label>
+  <input id="kw" type="text" placeholder="輸入關鍵字">
+  <button id="clear" type="button" title="清除並重置">清除</button>
+  <!--<div class="count" id="count" aria-live="polite"></div>-->
+  <label class="count" id="count" aria-live="polite"></label>
+
+</div>
+</br>
+點擊內容文字可複製
+<table id="dataTable">
+
+
+<thead><tr><th>目的地</th><th>對應韓文</th><th>地址</th><th>Naver-MAP</th></tr></thead>
+
+<tbody><tr><td>北港飯店</td><td>노스하버호텔</td><td>부산 영도구 태종로 45 8층</td><td><a href="https://naver.me/52R5Z1DJ" target="_blank" rel="noopener noreferrer">https://naver.me/52R5Z1DJ</a></td></tr></tbody>
+
+<tbody><tr><td>海雲台藍線公園-尾浦站(路口)</td><td>해운대블루라인파크 미포정거장</td><td>부산광역시 해운대구 중동 1085-3</td><td><a href="https://naver.me/GiajRBow" target="_blank" rel="noopener noreferrer">https://naver.me/GiajRBow</a></td></tr></tbody>
+
+<tbody><tr><td>星巴克海雲臺店(海灘前)</td><td>스타벅스 해운대점</td><td>부산 해운대구 구남로 49 (중동) 101호</td><td><a href="https://naver.me/GQ1luZrW" target="_blank" rel="noopener noreferrer">https://naver.me/GQ1luZrW</a></td></tr></tbody>
+
+<tbody><tr><td>味贊王鹽烤肉</td><td>맛찬들왕소금구이 해운대점</td><td>부산 해운대구 해운대로608번길 46</td><td><a href="https://naver.me/GSDACPH7" target="_blank" rel="noopener noreferrer">https://naver.me/GSDACPH7</a></td></tr></tbody>
+
+<tbody><tr><td>Olive Young廣安海灘店</td><td>올리브영 광안비치점</td><td>부산 수영구 광안해변로 235 1층1호</td><td><a href="https://naver.me/5MV4zBzu" target="_blank" rel="noopener noreferrer">https://naver.me/5MV4zBzu</a></td></tr></tbody>
+
+<tbody><tr><td>甘川文化洞,165雜貨飾品店(離小王子最近)</td><td>엔젤165</td><td>부산 사하구 감내2로 165</td><td><a href="https://naver.me/FfBvmNyQ" target="_blank" rel="noopener noreferrer">https://naver.me/FfBvmNyQ</a></td></tr></tbody>
+
+<tbody><tr><td>甘川文化洞(路口咖啡廳)</td><td>감천문화마을</td><td>부산 사하구 옥천로 121</td><td><a href="https://naver.me/G2Eb1sZr" target="_blank" rel="noopener noreferrer">https://naver.me/G2Eb1sZr</a></td></tr></tbody>
+
+<tbody><tr><td>札嘎其市場</td><td>부산자갈치시장</td><td>부산 중구 자갈치해안로 52 자갈치시장</td><td><a href="https://naver.me/xBwJzsdQ" target="_blank" rel="noopener noreferrer">https://naver.me/xBwJzsdQ</a></td></tr></tbody>
+
+
+<tbody>
+<tr><td>世界向日葵瞭望臺</td><td>누리바라기전망대</td><td>부산 서구 남부민동 50-40</td><td><a href="https://naver.me/GPdYu9LQ" target="_blank" rel="noopener noreferrer">https://naver.me/GPdYu9LQ</a>
+</br>
+<a href="https://maps.app.goo.gl/hSNcdrp3uheLMEqu8" target="_blank" rel="noopener noreferrer">https://maps.app.goo.gl/hSNcdrp3uheLMEqu8</a>
+
+</td></tr>
+
+
+
+</tbody>
+
+</table>
+
+
+<script>
+    document.querySelectorAll("td").forEach(td => {
+      // 排除含有 http(s) 連結的欄位
+      if (td.querySelector("a")) return;
+
+      td.addEventListener("click", async () => {
+        try {
+          const text = td.innerText.trim();
+          await navigator.clipboard.writeText(text);
+
+          td.classList.add("copied");
+          setTimeout(() => td.classList.remove("copied"), 600);
+        } catch (err) {
+          alert("複製失敗：" + err);
+        }
+      });
+    });
+	
+	const kw = document.getElementById("kw");
+const clearBtn = document.getElementById("clear");
+const tbodyRows = Array.from(document.querySelectorAll("#dataTable tbody tr"));
+const countEl = document.getElementById("count");
+
+function updateCount() {
+  const visible = tbodyRows.filter(r => !r.hidden).length;
+  countEl.textContent = visible + " / " + tbodyRows.length + " 筆";
+}
+
+function applyFilter() {
+  const q = kw.value.trim();
+  if (!q) {
+    tbodyRows.forEach(r => r.hidden = false); // 無關鍵字時顯示全部
+    updateCount();
+    return;
+  }
+  // 支援多關鍵字：空白分隔；需全部命中才顯示（AND條件）
+  const terms = q.split(/\s+/).filter(Boolean).map(s => s.toLowerCase());
+  tbodyRows.forEach(r => {
+    const text = r.innerText.toLowerCase();
+    const hit = terms.every(t => text.includes(t));
+    r.hidden = !hit;
+  });
+  updateCount();
+}
+
+kw.addEventListener("input", applyFilter);
+clearBtn.addEventListener("click", () => {
+  kw.value = "";
+  applyFilter();     // 立即重置回「顯示全部」
+  kw.focus();
+});
+
+updateCount(); // 初始顯示筆數
+	
+  </script>
+
+</body>
+
+
+</html>
