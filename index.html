@@ -3,62 +3,115 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>旅遊行程表｜釜山</title>
+  <title>釜山旅遊整合版｜行程表＋地鐵站文字對照</title>
   <style>
     :root{
-      --bg:#eaf6fb;          /* 淺藍灰：天空海霧感 */
-      --card:#ffffff;        /* 白色卡片 */
-      --muted:#f2f6f9;       /* 淡灰藍輸入框 */
-      --text:#333333;        /* 深灰文字 */
-      --sub:#607d8b;         /* 輔助文字：灰藍 */
-      --accent:#1e88e5;      /* 海洋藍 */
-      --accent2:#26c6da;     /* 松石綠 */
-      --line:#cfd8dc;        /* 淺灰藍邊線 */
+      --bg:#eaf6fb;
+      --card:#ffffff;
+      --muted:#f2f6f9;
+      --text:#333333;
+      --sub:#607d8b;
+      --accent:#1e88e5;
+      --accent2:#26c6da;
+      --line:#cfd8dc;
       --radius:14px;
       --shadow:0 4px 12px rgba(0,0,0,.1);
     }
     html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--text);
-      font:14.5px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Noto Sans TC,Arial,sans-serif}
+    body{
+      margin:0;background:var(--bg);color:var(--text);
+      font:14.5px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Noto Sans TC,Arial,sans-serif;
+    }
     .wrap{max-width:1050px;margin:auto;padding:24px}
-    h1{margin:0 0 6px;font-size:clamp(22px,2.8vw,30px)}
-    .sub{margin:0 0 16px;color:var(--sub);font-size: 1.0rem; /* 約等於 24px */}
+    h1{margin:0 0 6px;font-size:clamp(22px,2.8vw,30px);text-align:center}
+    .sub{margin:0 0 16px;color:var(--sub);font-size:1.0rem;text-align:center}
 
-    .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--card);
-      border:1px solid var(--line);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow)}
-    .toolbar input[type="search"], .toolbar select{background:var(--muted);border:1px solid var(--line);color:var(--text);
-      border-radius:10px;padding:10px 12px;min-width:200px;outline:none}
+    .main-tabs{
+      position:sticky;top:0;z-index:20;
+      display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;
+      background:rgba(234,246,251,.92);backdrop-filter:blur(8px);
+      padding:10px 0 14px;margin-bottom:8px;
+    }
+    .tab-btn{
+      border:1px solid var(--line);background:#fff;color:var(--accent);
+      padding:11px 18px;border-radius:999px;cursor:pointer;font-weight:800;
+      box-shadow:0 2px 8px rgba(0,0,0,.08);
+    }
+    .tab-btn.active{
+      color:#fff;border-color:transparent;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+    }
+
+    .page{display:none}
+    .page.active{display:block}
+
+    .toolbar{
+      display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--card);
+      border:1px solid var(--line);border-radius:var(--radius);padding:12px;box-shadow:var(--shadow);
+      margin:12px 0 14px;
+    }
+    .toolbar input[type="search"], .toolbar select{
+      background:var(--muted);border:1px solid var(--line);color:var(--text);
+      border-radius:10px;padding:10px 12px;min-width:200px;outline:none;
+    }
+    .toolbar input[type="search"]{flex:1}
     .spacer{flex:1}
-    .btn{border:1px solid var(--line);background:#ffffff;color:var(--accent);padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+    .btn{
+      border:1px solid var(--line);background:#ffffff;color:var(--accent);
+      padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600;
+    }
     .btn:hover{background:#f2f6f9}
 
-    details.group{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin:14px 0;overflow:hidden;box-shadow:var(--shadow)}
+    details.group{
+      background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+      margin:14px 0;overflow:hidden;box-shadow:var(--shadow)
+    }
     details.group[open] summary{border-bottom:1px solid var(--line)}
-    summary{list-style:none;display:flex;align-items:center;gap:10px;cursor:pointer;padding:14px 16px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff}
+    summary{
+      list-style:none;display:flex;align-items:center;gap:10px;cursor:pointer;
+      padding:14px 16px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff
+    }
     summary::-webkit-details-marker{display:none}
-    .date-badge{font-weight:700;letter-spacing:.3px;padding:6px 10px;border-radius:999px;background:#fff;color:var(--accent)}
+    .date-badge{
+      font-weight:700;letter-spacing:.3px;padding:6px 10px;border-radius:999px;background:#fff;color:var(--accent)
+    }
     .count{margin-left:auto;color:#fff;font-size:13px}
-
     .table-wrapper{width:100%;overflow-x:auto}
     table{width:100%;border-collapse:collapse;min-width:600px;table-layout:fixed;border:1px solid var(--line)}
-    thead th{position:sticky;top:0;background:#bbdefb;color:#0d47a1;text-align:left;padding:10px;border:1px solid var(--line);font-weight:600;white-space:nowrap}
-    tbody td{padding:12px;border:1px solid var(--line);vertical-align:top;}
+    thead th{
+      position:sticky;top:56px;background:#bbdefb;color:#0d47a1;text-align:left;
+      padding:10px;border:1px solid var(--line);font-weight:600;white-space:nowrap
+    }
+    tbody td{padding:12px;border:1px solid var(--line);vertical-align:top}
     tbody tr:nth-child(even){background:#f9fdff}
     .route{color:#0277bd;white-space:normal}
     .note{color:#ef6c00;white-space:normal}
-
     .empty{display:none;margin:18px 0 8px;color:var(--sub)}
 
+    #metroPage .hint{
+      color:var(--sub);font-size:13px;margin:4px 0 12px;
+    }
+    #metroTable td{cursor:pointer}
+    #metroTable th{background:#f1f5f9;color:#334155}
+    .hide-row{display:none !important}
+    mark.search-hit{background:#fde68a;padding:0 2px;border-radius:4px}
+    .copied{background:#d1fae5 !important;transition:background .6s}
+
     @media (max-width:820px){
+      .wrap{padding:14px}
       body{font-size:13px}
+      .main-tabs{top:0}
+      .toolbar input[type="search"], .toolbar select{min-width:100%;box-sizing:border-box}
+      .toolbar .spacer{display:none}
       table{min-width:100%;table-layout:fixed}
-      thead th{font-size:12px}
+      thead th{font-size:12px;top:54px}
       tbody td{font-size:12px;word-wrap:break-word;white-space:normal}
     }
 
     @media print{
       body{background:#fff;color:#000}
-      .toolbar{display:none}
+      .main-tabs,.toolbar{display:none}
+      .page{display:block}
       details.group{box-shadow:none;border:1px solid #bbb}
       summary{background:#eee;color:#000}
       .date-badge{background:#000;color:#fff}
@@ -67,223 +120,331 @@
 </head>
 <body>
 <div class="wrap">
-  <!--<center><h1>行程表</h1></center>-->
-  <center><p class="sub">南韓釜山旅遊(五天四夜)<br>旅遊期間の日出:6:37 | 日落:17:36</p></center>
+  <h1>釜山旅遊整合版</h1>
+  <p class="sub">南韓釜山旅遊(五天四夜)<br/>旅遊期間の日出:6:37 | 日落:17:36</p>
 
-  <div class="toolbar" role="region" aria-label="工具列">
-    <input id="q" type="search" placeholder="輸入關鍵字（地點／路線／備註）…" />
-    <select id="dateFilter"><option value="">全部日期</option></select>
-    <div class="spacer"></div>
-    <button class="btn" id="expandAll">展開全部</button>
-    <button class="btn" id="collapseAll">收合全部</button>
-  </div>
+  <nav class="main-tabs" aria-label="功能切換">
+    <button class="tab-btn active" type="button" data-page="itineraryPage">行程表</button>
+    <button class="tab-btn" type="button" data-page="metroPage">地鐵站文字對照</button>
+  </nav>
 
-  <p class="empty" id="emptyMsg">沒有符合條件的項目。</p>
+  <section id="itineraryPage" class="page active" aria-label="行程表">
+    <div class="toolbar" role="region" aria-label="行程表工具列">
+      <input id="itineraryQ" type="search" placeholder="輸入關鍵字（地點／路線／備註）…" />
+      <select id="itineraryDateFilter"><option value="">全部日期</option></select>
+      <div class="spacer"></div>
+      <button class="btn" id="expandAll" type="button">展開全部</button>
+      <button class="btn" id="collapseAll" type="button">收合全部</button>
+    </div>
+    <p class="empty" id="itineraryEmptyMsg">沒有符合條件的項目。</p>
+    <div id="groups">
+<details class="group">
+<summary><span class="date-badge">2025/10/23（四）</span>DAY1(桃機→金海機場)<span class="count"></span></summary>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>時間</th><th>行程內容</th><th>路線</th><th>備註</th></tr>
+</thead>
+<tbody>
+<tr><td>08:20</td><td>新竹→桃園機場</td><td class="route">機場快線接送</td><td class="note">送機至第一航廈</td></tr>
+<tr><td>10:00</td><td>大韓航空(KE2250)登機託運</td><td class="route">第一航廈</td><td class="note">11點開始</td></tr>
+<tr><td>12:00</td><td>搭乘大韓航空</td><td class="route">飛往釜山</td><td class="note">B737-900ER</td></tr>
+<tr><td>15:30</td><td>抵達金海機場</td><td class="route"></td><td class="note"></td></tr>
+<tr><td>16:30</td><td>機場接送接機</td><td class="route"></td><td class="note">klook機場接送</td></tr>
+<tr><td>17:00</td><td>北港飯店(North Harbor Hotel)노스하버호텔 부산</td><td class="route">45, Taejong-ro, Yeongdo-gu, Busan</td><td class="note">부산광역시 영도구 태종로 45電話:0514143333</td></tr>
+<tr><td>17:30</td><td>南浦洞友利換錢所換錢</td><td class="route">飯店右轉直走影島大橋→經樂天百貨過2個路口→南浦站7號出口過馬路→THE COFFEE BEAN對面即可到達</td><td class="note">營業時間:08:00-20:00</td></tr>
+<tr><td>17:45</td><td>樂天百貨光復店噴泉秀、觀景台、晚餐</td><td class="route">樂天百貨觀景台：13樓樂天百貨美食街：B1、10F麵包店：B1　OPS</td><td class="note">營業時間:10:30-20:00晚餐約₩40,000</td></tr>
+<tr><td>20:00</td><td>樂天超市</td><td class="route">樂天百貨：B1</td><td class="note">營業時間:10:30-23:00</td></tr>
+<tr><td>21:45</td><td>北港飯店</td><td class="route">往影島大橋方向直走約340M左側即可到達</td><td class="note"></td></tr>
+</tbody>
+</table>
+</div>
+</details>
+<details class="group">
+<summary><span class="date-badge">2025/10/24（五）</span>DAY2(慶洲一日團)<span class="count"></span></summary>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>時間</th><th>行程內容</th><th>路線</th><th>備註</th></tr>
+</thead>
+<tbody>
+<tr><td>07:45</td><td>早餐</td><td class="route">前晚樂天百貨B1：OPS麵包店先購買</td><td class="note">最晚8:15要出門約₩15,000</td></tr>
+<tr><td>08:30</td><td>南浦站</td><td class="route">飯店右轉直走影島大橋→經樂天百貨過2個路口即可到達(9min)</td><td class="note"></td></tr>
+<tr><td>09:20</td><td>釜山火車站1號出口集合</td><td class="route">111南浦站→113釜山站，6號出口，往右直走→釜山車站GATE1集合</td><td class="note">10min</td></tr>
+<tr><td>11:50</td><td>佛國寺(自費午餐)</td><td class="route"></td><td class="note">約₩40,000</td></tr>
+<tr><td>14:40</td><td>慶州校村</td><td class="route"></td><td class="note"></td></tr>
+<tr><td>16:30</td><td>大陵院、皇理團路</td><td class="route"></td><td class="note"></td></tr>
+<tr><td>18:30</td><td>東宮與月池</td><td class="route"></td><td class="note"></td></tr>
+<tr><td>19:20</td><td>月精橋</td><td class="route"></td><td class="note"></td></tr>
+<tr><td>21:40</td><td>抵達釜山火車站</td><td class="route">113釜山站→111南浦站，8號出口，直走450M即可到達</td><td class="note"></td></tr>
+<tr><td>22:10</td><td>bbq炸雞(晚餐/宵夜)</td><td class="route">北港飯店2樓</td><td class="note">約₩20,000</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+<details class="group">
+<summary><span class="date-badge">2025/10/25（六）</span>DAY3(海雲台/廣安里無人機)<span class="count"></span></summary>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>時間</th><th>行程內容</th><th>路線</th><th>備註</th></tr>
+</thead>
+<tbody>
+<tr><td>08:30</td><td>EGG DROP(早餐)</td><td class="route">飯店門口右轉直走→經樂天百貨→過兩個馬路→經Mega MCG COFFEE左轉→直走右側即可到達(10min)</td><td class="note">約₩9,000*4=₩36,000</td></tr>
+<tr><td>10:00</td><td>SEA LIFE水族館</td><td class="route">111南浦站→119西面→203海雲台，5號出口，直走約340M→Y字路口走右邊，直走到底→左轉過馬路→往右側走→左轉往海灘方向即可到達</td><td class="note">(54min)</td></tr>
+<tr><td>12:00</td><td>森多真足豬腳(午餐)</td><td class="route">水族館向右直走至路口，過大馬路，向右直走(經星巴客)，至BURNCH COFFEE左轉，直走右側即到達(13min)</td><td class="note">三合一＋涼拌₩39000</td></tr>
+<tr><td>13:30</td><td>海雲台藍線公園尾浦站</td><td class="route">搭TAXI前往</td><td class="note">5min</td></tr>
+<tr><td>14:00</td><td>尾浦站→青沙浦站(Mipo→Cheongsapo)</td><td class="route">海岸列車(Beach Train)</td><td class="note">訂票14:00(出發前10分鐘停止登車),海雲台藍線公園路口走到尾浦車站要5分鐘(318公尺)</td></tr>
+<tr><td>14:30</td><td>韓版灌藍高手平交道、青沙浦天空步道、紅白燈塔</td><td class="route">出站即是平交道，直走約8min可到達青沙浦天空步道，車站後方可到達紅白燈塔</td><td class="note"></td></tr>
+<tr><td>17:00</td><td>青沙浦站→尾浦站(Cheongsapo→Mipo)</td><td class="route">天空膠囊列車(Sky Capsule)</td><td class="note">訂票17:00-17:30(時間內搭乘)，考量回尾浦要坐TAXI；16:50先去車站排隊</td></tr>
+<tr><td>17:30</td><td>尾浦站→味贊王烤肉</td><td class="route">搭TAXI前往(理想17:50前坐到車)</td><td class="note">5min</td></tr>
+<!--<tr><td>18:00</td><td>味贊王烤肉-海雲台店(晚餐)</td><td class="route">海雲台海水浴場過馬路後往左走至路口右轉直走至路口→CU便利商店左轉→直走175M在左側(8min)</td><td class="note">豬頸肉*2、五花肉*2</br>₩14000*4=₩56000</td></tr>-->
+<tr><td>18:00</td><td>味贊王烤肉(晚餐)</td><td class="route">好好享用韓國烤肉</td><td class="note">豬頸肉*2、五花肉*2₩14000*4=₩56000</td></tr>
+<tr><td>20:30</td><td>廣安里無人機燈光秀</td><td class="route">搭TAXI前往(11min)</td><td class="note">21:00開始(表演10分鐘)</td></tr>
+<tr><td>22:00</td><td>北港飯店</td><td class="route">搭TAXI(25min)</td><td class="note"></td></tr>
+</tbody>
+</table>
+</div>
+</details>
+<details class="group">
+<summary><span class="date-badge">2025/10/26（日）</span>DAY4(甘川文化村/釜山夜景)<span class="count"></span></summary>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>時間</th><th>行程內容</th><th>路線</th><th>備註</th></tr>
+</thead>
+<tbody>
+<tr><td>09:00</td><td>早餐</td><td class="route"></td><td class="note"></td></tr>
+<tr><td>10:00</td><td>甘川洞文化村</td><td class="route">搭TAXI前往</td><td class="note">7min</td></tr>
+<tr><td>12:00</td><td>札嘎其市場(午餐)</td><td class="route">吃帝王蟹</td><td class="note">6min100.101號攤,約₩150,000</td></tr>
+<tr><td>14:00</td><td>BIFF廣場、南浦洞大創、OLIVE YOUNG</td><td class="route">市場入口過馬路到對面，直走即可到達</td><td class="note"></td></tr>
+<tr><td>16:30</td><td>回北港飯店放佔利品</td><td class="route">往影島大橋方向直走約340M左側即可到達</td><td class="note"></td></tr>
+<tr><td>17:00</td><td>西面地下街逛街</td><td class="route">南浦站→西面站，往1、2號出口方向</td><td class="note">14min</td></tr>
+<tr><td>19:00</td><td>秀英(水營)本家豬肉湯飯(晚餐)</td><td class="route">▲西面站1號出口，直走至路口右轉，直走左轉，直走在左側即可到達▲地下街7號出口，直走至路口右轉，再右轉，右側即可到達</td><td class="note">8min₩10000*4＝₩40000</td></tr>
+<tr><td>19:45</td><td>回北港飯店放佔利品</td><td class="route">119西面站→111南浦站，8號出口，直走450M即可到達</td><td class="note">14min</td></tr>
+<tr><td>20:00</td><td>釜山港夜景展望台</td><td class="route">搭TAXI前往天馬山雕刻公園入口停車場</td><td class="note">13min</td></tr>
+<tr><td>21:15</td><td>北港飯店</td><td class="route">搭TAXI</td><td class="note">13min</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+<details class="group">
+<summary><span class="date-badge">2025/10/27（一）</span>DAY5(金海機場→桃機)<span class="count"></span></summary>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>日期時間</th><th>行程內容</th><th>路線</th><th>備註</th></tr>
+</thead>
+<tbody>
+<tr><td>09:00</td><td>南浦雪濃湯(早餐)</td><td class="route">南浦站1號出口→直走至第二個路口右轉→直走左邊即可到達</td><td class="note">13min₩9000*4=₩36000</td></tr>
+<tr><td>10:40</td><td>飯店check out</td><td class="route"></td><td class="note"></td></tr>
+<tr><td>10:50</td><td>機場接送送機→金海機場</td><td class="route">飯店門口機場接送</td><td class="note">klook機場接送</td></tr>
+<tr><td>11:30</td><td>大韓航空(KE2249)登機託運</td><td class="route">金海機場I航廈</td><td class="note">13:50開始辦理</td></tr>
+<tr><td>14:50</td><td>搭乘大韓航空</td><td class="route">飛往台灣</td><td class="note">B737-900</td></tr>
+<tr><td>16:30</td><td>抵達桃機</td><td class="route"></td><td class="note">機場快線接送</td></tr>
+<tr><td>18:00</td><td>返家</td><td class="route"></td><td class="note"></td></tr>
+</tbody>
+</table>
+</div>
+</details>
+</div>
+  </section>
 
-  <div id="groups">
-    <details class="group">
-	      <summary><span class="date-badge">2025/10/23（四）</span>DAY1(桃機→金海機場)<span class="count"></span></summary>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr><th>時間</th><th>行程內容</th><th>路線</th><th>備註</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>08:20</td><td>新竹→桃園機場</td><td class="route">機場快線接送</td><td class="note">送機至第一航廈</td></tr>
-            <tr><td>10:00</td><td>大韓航空(KE2250)登機託運</td><td class="route">第一航廈</td><td class="note">11點開始</td></tr>
-            <tr><td>12:00</td><td>搭乘大韓航空</td><td class="route">飛往釜山</td><td class="note">B737-900ER</td></tr>
-			<tr><td>15:30</td><td>抵達金海機場</td><td class="route"></td><td class="note"></td></tr>
-			<tr><td>16:30</td><td>機場接送接機</td><td class="route"></td><td class="note">klook機場接送</td></tr>
-			<tr><td>17:00</td><td>北港飯店(North Harbor Hotel)</br>노스하버호텔 부산</td><td class="route">45, Taejong-ro, Yeongdo-gu, Busan</td><td class="note">부산광역시 영도구 태종로 45</br>電話:0514143333</td></tr>
-			<tr><td>17:30</td><td>南浦洞友利換錢所換錢</td><td class="route">飯店右轉直走影島大橋→經樂天百貨過2個路口→南浦站7號出口過馬路→THE COFFEE BEAN對面即可到達</td><td class="note">營業時間:08:00-20:00</td></tr>
-			<tr><td>17:45</td><td>樂天百貨光復店</br>噴泉秀、觀景台、晚餐</td><td class="route">樂天百貨觀景台：13樓</br>樂天百貨美食街：B1、10F</br>麵包店：B1　OPS</td><td class="note">營業時間:10:30-20:00</br>晚餐約₩40,000</td></tr>
-			<tr><td>20:00</td><td>樂天超市</td><td class="route">樂天百貨：B1</td><td class="note">營業時間:10:30-23:00</td></tr>
-			<tr><td>21:45</td><td>北港飯店</td><td class="route">往影島大橋方向直走約340M左側即可到達</td><td class="note"></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </details>
-
-    <details class="group">
-      <summary><span class="date-badge">2025/10/24（五）</span>DAY2(慶洲一日團)<span class="count"></span></summary>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr><th>時間</th><th>行程內容</th><th>路線</th><th>備註</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>07:45</td><td>早餐</td><td class="route">前晚樂天百貨B1：OPS麵包店先購買</td><td class="note">最晚8:15要出門</br>約₩15,000</td></tr>
-            <tr><td>08:30</td><td>南浦站</td><td class="route">飯店右轉直走影島大橋→經樂天百貨過2個路口即可到達(9min)</td><td class="note"></td></tr>
-			<tr><td>09:20</td><td>釜山火車站1號出口集合</td><td class="route">111南浦站→113釜山站，6號出口，往右直走→釜山車站GATE1集合</td><td class="note">10min</td></tr>
-			<tr><td>11:50</td><td>佛國寺(自費午餐)</td><td class="route"></td><td class="note">約₩40,000</td></tr>
-			<tr><td>14:40</td><td>慶州校村</td><td class="route"></td><td class="note"></td></tr>
-			<tr><td>16:30</td><td>大陵院、皇理團路</td><td class="route"></td><td class="note"></td></tr>
-			<tr><td>18:30</td><td>東宮與月池</td><td class="route"></td><td class="note"></td></tr>
-			<tr><td>19:20</td><td>月精橋</td><td class="route"></td><td class="note"></td></tr>
-			<tr><td>21:40</td><td>抵達釜山火車站</td><td class="route">113釜山站→111南浦站，8號出口，直走450M即可到達</td><td class="note"></td></tr>
-			<tr><td>22:10</td><td>bbq炸雞(晚餐/宵夜)</td><td class="route">北港飯店2樓</td><td class="note">約₩20,000</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </details>
-	
-	<details class="group">
-      <summary><span class="date-badge">2025/10/25（六）</span>DAY3(海雲台/廣安里無人機)<span class="count"></span></summary>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr><th>時間</th><th>行程內容</th><th>路線</th><th>備註</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>08:30</td><td>EGG DROP(早餐)</td><td class="route">飯店門口右轉直走→經樂天百貨→過兩個馬路→經Mega MCG COFFEE左轉→直走右側即可到達(10min)</td><td class="note">約₩9,000*4=₩36,000</td></tr>
-            <tr><td>10:00</td><td>SEA LIFE水族館</td><td class="route">111南浦站→119西面→203海雲台，5號出口，直走約340M→Y字路口走右邊，直走到底→左轉過馬路→往右側走→左轉往海灘方向即可到達</td><td class="note">(54min)</td></tr>
-            <tr><td>12:00</td><td>森多真足豬腳(午餐)</td><td class="route">水族館向右直走至路口，過大馬路，向右直走(經星巴客)，至BURNCH COFFEE左轉，直走右側即到達(13min)</td><td class="note">三合一＋涼拌₩39000</td></tr>
-			<tr><td>13:30</td><td>海雲台藍線公園尾浦站</td><td class="route">搭TAXI前往</td><td class="note">5min</td></tr>
-			
-			<tr><td>14:00</td><td>尾浦站→青沙浦站</br>(Mipo→Cheongsapo)</td><td class="route">海岸列車(Beach Train)</td><td class="note">訂票14:00(出發前10分鐘停止登車),海雲台藍線公園路口走到尾浦車站要5分鐘(318公尺)</td></tr>
-			<tr><td>14:30</td><td>韓版灌藍高手平交道、青沙浦天空步道、紅白燈塔</td><td class="route">出站即是平交道，直走約8min可到達青沙浦天空步道，車站後方可到達紅白燈塔</td><td class="note"></td></tr>
-			
-			<tr><td>17:00</td><td>青沙浦站→尾浦站</br>(Cheongsapo→Mipo)</td><td class="route">天空膠囊列車(Sky Capsule)</td><td class="note">訂票17:00-17:30(時間內搭乘)，考量回尾浦要坐TAXI；16:50先去車站排隊</td></tr>
-			
-			<tr><td>17:30</td><td>尾浦站→味贊王烤肉</td><td class="route">搭TAXI前往(理想17:50前坐到車)</td><td class="note">5min</td></tr>
-			
-			<!--<tr><td>18:00</td><td>味贊王烤肉-海雲台店(晚餐)</td><td class="route">海雲台海水浴場過馬路後往左走至路口右轉直走至路口→CU便利商店左轉→直走175M在左側(8min)</td><td class="note">豬頸肉*2、五花肉*2</br>₩14000*4=₩56000</td></tr>-->
-			
-			<tr><td>18:00</td><td>味贊王烤肉(晚餐)</td><td class="route">好好享用韓國烤肉</td><td class="note">豬頸肉*2、五花肉*2</br>₩14000*4=₩56000</td></tr>
-			
-			<tr><td>20:30</td><td>廣安里無人機燈光秀</td><td class="route">搭TAXI前往(11min)</td><td class="note">21:00開始(表演10分鐘)</td></tr>
-			<tr><td>22:00</td><td>北港飯店</td><td class="route">搭TAXI(25min)</td><td class="note"></td></tr>
-          </tbody>
-
-        </table>
-      </div>
-    </details>
-	
-	<details class="group">
-      <summary><span class="date-badge">2025/10/26（日）</span>DAY4(甘川文化村/釜山夜景)<span class="count"></span></summary>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr><th>時間</th><th>行程內容</th><th>路線</th><th>備註</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>09:00</td><td>早餐</td><td class="route"></td><td class="note"></td></tr>
-            <tr><td>10:00</td><td>甘川洞文化村</td><td class="route">搭TAXI前往</td><td class="note">7min</td></tr>
-            <tr><td>12:00</td><td>札嘎其市場(午餐)</td><td class="route">吃帝王蟹</td><td class="note">6min</br>100.101號攤,約₩150,000</td></tr>
-			<tr><td>14:00</td><td>BIFF廣場、南浦洞大創、OLIVE YOUNG</td><td class="route">市場入口過馬路到對面，直走即可到達</td><td class="note"></td></tr>
-			<tr><td>16:30</td><td>回北港飯店放佔利品</td><td class="route">往影島大橋方向直走約340M左側即可到達</td><td class="note"></td></tr>
-			<tr><td>17:00</td><td>西面地下街逛街</td><td class="route">南浦站→西面站，往1、2號出口方向</td><td class="note">14min</td></tr>
-			<tr><td>19:00</td><td>秀英(水營)本家豬肉湯飯(晚餐)</td><td class="route">▲西面站1號出口，直走至路口右轉，直走左轉，直走在左側即可到達</br>▲地下街7號出口，直走至路口右轉，再右轉，右側即可到達</td><td class="note">8min</br>₩10000*4＝₩40000</td></tr>
-			<tr><td>19:45</td><td>回北港飯店放佔利品</td><td class="route">119西面站→111南浦站，8號出口，直走450M即可到達</td><td class="note">14min</td></tr>
-			<tr><td>20:00</td><td>釜山港夜景展望台</td><td class="route">搭TAXI前往天馬山雕刻公園入口停車場</td><td class="note">13min</td></tr>
-			<tr><td>21:15</td><td>北港飯店</td><td class="route">搭TAXI</td><td class="note">13min</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </details>
-	
-	<details class="group">
-      <summary><span class="date-badge">2025/10/27（一）</span>DAY5(金海機場→桃機)<span class="count"></span></summary>
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr><th>日期時間</th><th>行程內容</th><th>路線</th><th>備註</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>09:00</td><td>南浦雪濃湯(早餐)</td><td class="route">南浦站1號出口→直走至第二個路口右轉→直走左邊即可到達</td><td class="note">13min</br>₩9000*4=₩36000</td></tr>
-            <tr><td>10:40</td><td>飯店check out</td><td class="route"></td><td class="note"></td></tr>
-            <tr><td>10:50</td><td>機場接送送機→金海機場</td><td class="route">飯店門口機場接送</td><td class="note">klook機場接送</td></tr>
-			<tr><td>11:30</td><td>大韓航空(KE2249)登機託運</td><td class="route">金海機場I航廈</td><td class="note">13:50開始辦理</td></tr>
-			<tr><td>14:50</td><td>搭乘大韓航空</td><td class="route">飛往台灣</td><td class="note">B737-900</td></tr>
-			<tr><td>16:30</td><td>抵達桃機</td><td class="route"></td><td class="note">機場快線接送</td></tr>
-			<tr><td>18:00</td><td>返家</td><td class="route"></td><td class="note"></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </details>
-	
-  </div>
+  <section id="metroPage" class="page" aria-label="地鐵站文字對照">
+    <div class="toolbar" role="region" aria-label="地鐵站工具列">
+      <input id="metroQ" type="search" placeholder="搜尋站號／韓文／英文／中文，點擊儲存格即可複製文字" />
+      <button class="btn" id="metroClearBtn" type="button">清除</button>
+      <div class="spacer"></div>
+      <div id="metroCount" style="color:#64748b;font-size:13px"></div>
+    </div>
+    <p class="hint">小提醒：搜尋結果可以直接點欄位複製文字；手機上也能用。出國時少切兩個檔案，少一點手忙腳亂。</p>
+    <div class="table-wrapper">
+      <table id="metroTable"><thead><tr><th>線路</th><th>站號</th><th>韓文站名</th><th>英文站名</th><th>中文站名</th></tr></thead><tbody><tr><td>1號線</td><td>095</td><td>다대포해수욕장역</td><td>Dadaepo Beach</td><td>大田浦海水浴場</td></tr><tr><td>1號線</td><td>096</td><td>다대포항역</td><td>Dadaepo Harbor</td><td>大田浦港</td></tr><tr><td>1號線</td><td>097</td><td>낫개역</td><td>Natgae</td><td>轎溪</td></tr><tr><td>1號線</td><td>098</td><td>신장림역</td><td>Sinjangnim</td><td>新長林</td></tr><tr><td>1號線</td><td>099</td><td>장림역</td><td>Jangnim</td><td>長林</td></tr><tr><td>1號線</td><td>100</td><td>동매역</td><td>Dongmae</td><td>東媒</td></tr><tr><td>1號線</td><td>101</td><td>신평역</td><td>Sinpyeong</td><td>新平</td></tr><tr><td>1號線</td><td>102</td><td>하단역</td><td>Hadan</td><td>沙下</td></tr><tr><td>1號線</td><td>103</td><td>당리역</td><td>Dangni</td><td>當里</td></tr><tr><td>1號線</td><td>104</td><td>사하역</td><td>Saha</td><td>沙下</td></tr><tr><td>1號線</td><td>105</td><td>괴정역</td><td>Goejeong</td><td>居井</td></tr><tr><td>1號線</td><td>106</td><td>대티역</td><td>Daeti</td><td>大渚</td></tr><tr><td>1號線</td><td>107</td><td>서대신역</td><td>Seodaesin</td><td>西大新</td></tr><tr><td>1號線</td><td>108</td><td>동대신역</td><td>Dongdaesin</td><td>東大新</td></tr><tr><td>1號線</td><td>109</td><td>토성역</td><td>Toseong</td><td>土城</td></tr><tr><td>1號線</td><td>110</td><td>자갈치역</td><td>Jagalchi</td><td>札嘎其</td></tr><tr><td>1號線</td><td>111</td><td>남포역</td><td>Nampo</td><td>南浦</td></tr><tr><td>1號線</td><td>112</td><td>중앙역</td><td>Jungang</td><td>中央</td></tr><tr><td>1號線</td><td>113</td><td>부산역역</td><td>Busan station</td><td>釜山站</td></tr><tr><td>1號線</td><td>114</td><td>초량역</td><td>Choryang</td><td>草梁</td></tr><tr><td>1號線</td><td>115</td><td>부산진역</td><td>Busanjin</td><td>釜山鎮</td></tr><tr><td>1號線</td><td>116</td><td>좌천역</td><td>Jwacheon</td><td>佐川</td></tr><tr><td>1號線</td><td>117</td><td>범일역</td><td>Beomil</td><td>凡一</td></tr><tr><td>1號線</td><td>118</td><td>범내골역</td><td>Beomnaegol</td><td>凡內谷</td></tr><tr><td>1號線</td><td>119</td><td>서면역</td><td>Seomyeon</td><td>西面</td></tr><tr><td>1號線</td><td>120</td><td>부전역</td><td>Bujeon</td><td>釜田</td></tr><tr><td>1號線</td><td>121</td><td>양정역</td><td>Yangjeong</td><td>楊亭</td></tr><tr><td>1號線</td><td>122</td><td>시청역</td><td>City Hall</td><td>市廳</td></tr><tr><td>1號線</td><td>123</td><td>연산역</td><td>Yeonsan</td><td>蓮山</td></tr><tr><td>1號線</td><td>124</td><td>교대역</td><td>Busan Nat'l Univ. of Edu.</td><td>釜山教育大學</td></tr><tr><td>1號線</td><td>125</td><td>동래역</td><td>Dongnae</td><td>東萊</td></tr><tr><td>1號線</td><td>126</td><td>명륜역</td><td>Myeongnyun</td><td>明倫</td></tr><tr><td>1號線</td><td>127</td><td>온천장역</td><td>Oncheonjang</td><td>溫泉場</td></tr><tr><td>1號線</td><td>128</td><td>부산대역</td><td>Pusan Nat'l Univ.</td><td>釜山大</td></tr><tr><td>1號線</td><td>129</td><td>장전역</td><td>Jangjeon</td><td>長箭</td></tr><tr><td>1號線</td><td>130</td><td>구서역</td><td>Guseo</td><td>九瑞</td></tr><tr><td>1號線</td><td>131</td><td>두실역</td><td>Dusil</td><td>杜邵</td></tr><tr><td>1號線</td><td>132</td><td>남산역</td><td>Namsan</td><td>南山</td></tr><tr><td>1號線</td><td>133</td><td>범어사역</td><td>Beomeosa</td><td>梵魚寺</td></tr><tr><td>1號線</td><td>134</td><td>노포역</td><td>Nopo</td><td>老圃</td></tr><tr><td>2號線</td><td>201</td><td>장산역</td><td>Jangsan</td><td>萇山</td></tr><tr><td>2號線</td><td>202</td><td>중동역</td><td>Jung-dong</td><td>中洞</td></tr><tr><td>2號線</td><td>203</td><td>해운대역</td><td>Haeundae</td><td>海雲台</td></tr><tr><td>2號線</td><td>204</td><td>동백역</td><td>Dongbaek</td><td>冬柏</td></tr><tr><td>2號線</td><td>205</td><td>시립미술관역</td><td>BEXCO(Busan Museum of Modern Art)</td><td>釜山現代美術館</td></tr><tr><td>2號線</td><td>206</td><td>센텀시티역</td><td>Centum City</td><td>世紀城</td></tr><tr><td>2號線</td><td>207</td><td>민락역</td><td>Millak</td><td>民樂</td></tr><tr><td>2號線</td><td>208</td><td>수영역</td><td>Suyeong</td><td>水營</td></tr><tr><td>2號線</td><td>209</td><td>광안역</td><td>Gwangan</td><td>廣安</td></tr><tr><td>2號線</td><td>210</td><td>금련산역</td><td>Geumnyeonsan</td><td>金蓮山</td></tr><tr><td>2號線</td><td>211</td><td>남천역</td><td>Namcheon</td><td>南川</td></tr><tr><td>2號線</td><td>212</td><td>경성대·부경대역</td><td>Kyungsung Univ·Pukyong Natl Univ</td><td>慶星大·釜山海洋大</td></tr><tr><td>2號線</td><td>213</td><td>대연역</td><td>Daeyeon</td><td>大淵</td></tr><tr><td>2號線</td><td>214</td><td>못골역</td><td>Motgol</td><td>茂谷</td></tr><tr><td>2號線</td><td>215</td><td>지게골역</td><td>Jigegol</td><td>竹岾</td></tr><tr><td>2號線</td><td>216</td><td>문현역</td><td>Munhyeon</td><td>文賢</td></tr><tr><td>2號線</td><td>217</td><td>국제금융센터·부산은행역</td><td>Busan International Finance Center·Busan Bank</td><td>國際金融中心·釜山銀行</td></tr><tr><td>2號線</td><td>218</td><td>전포역</td><td>Jeonpo</td><td>前浦</td></tr><tr><td>2號線</td><td>219</td><td>서면역</td><td>Seomyeon</td><td>西面</td></tr><tr><td>2號線</td><td>220</td><td>부암역</td><td>Buam</td><td>富岩</td></tr><tr><td>2號線</td><td>221</td><td>가야역</td><td>Gaya</td><td>加雅</td></tr><tr><td>2號線</td><td>222</td><td>동의대역</td><td>Dong-eui Univ.</td><td>東義大</td></tr><tr><td>2號線</td><td>223</td><td>개금역</td><td>Gaegeum</td><td>開金</td></tr><tr><td>2號線</td><td>224</td><td>냉정역</td><td>Naengjeong</td><td>冷井</td></tr><tr><td>2號線</td><td>225</td><td>주례역</td><td>Jurye</td><td>朱麗</td></tr><tr><td>2號線</td><td>226</td><td>감전역</td><td>Gamjeon</td><td>甘田</td></tr><tr><td>2號線</td><td>227</td><td>사상역</td><td>Sasang</td><td>沙上</td></tr><tr><td>2號線</td><td>228</td><td>덕포역</td><td>Deokpo</td><td>德浦</td></tr><tr><td>2號線</td><td>229</td><td>모덕역</td><td>Modeok</td><td>茂德</td></tr><tr><td>2號線</td><td>230</td><td>모라역</td><td>Mora</td><td>毛羅</td></tr><tr><td>2號線</td><td>231</td><td>구남역</td><td>Gunam</td><td>九南</td></tr><tr><td>2號線</td><td>232</td><td>구명역</td><td>Gumyeong</td><td>龜明</td></tr><tr><td>2號線</td><td>233</td><td>덕천역</td><td>Deokcheon</td><td>德川</td></tr><tr><td>2號線</td><td>234</td><td>수정역</td><td>Sujeong</td><td>水晶</td></tr><tr><td>2號線</td><td>235</td><td>화명역</td><td>Hwamyeong</td><td>華明</td></tr><tr><td>2號線</td><td>236</td><td>율리역</td><td>Yulli</td><td>栗里</td></tr><tr><td>2號線</td><td>237</td><td>동원역</td><td>Dongwon</td><td>東園</td></tr><tr><td>2號線</td><td>238</td><td>금곡역</td><td>Geumgok</td><td>金谷</td></tr><tr><td>2號線</td><td>239</td><td>호포역</td><td>Hopo</td><td>虎浦</td></tr><tr><td>2號線</td><td>240</td><td>증산역</td><td>Jeungsan</td><td>甑山</td></tr><tr><td>2號線</td><td>241</td><td>부산대양산캠퍼스역</td><td>Pusan Nat'l Univ. Yangsan Campus</td><td>釜山大洋山校區</td></tr><tr><td>2號線</td><td>242</td><td>남양산역</td><td>Namyangsan</td><td>南陽山</td></tr><tr><td>2號線</td><td>243</td><td>양산역</td><td>Yangsan</td><td>梁山（市廳·楊山大學）</td></tr><tr><td>3號線</td><td>301</td><td>수영역</td><td>Suyeong</td><td>水營</td></tr><tr><td>3號線</td><td>302</td><td>망미역</td><td>Mangmi</td><td>望美</td></tr><tr><td>3號線</td><td>303</td><td>배산역</td><td>Baesan</td><td>培山</td></tr><tr><td>3號線</td><td>304</td><td>물만골역</td><td>Mulmangol</td><td>水滿谷</td></tr><tr><td>3號線</td><td>305</td><td>연산역</td><td>Yeonsan</td><td>蓮山</td></tr><tr><td>3號線</td><td>306</td><td>거제역</td><td>Geoje</td><td>巨堤</td></tr><tr><td>3號線</td><td>307</td><td>종합운동장역</td><td>Sports Complex</td><td>綜合運動場</td></tr><tr><td>3號線</td><td>308</td><td>사직역</td><td>Sajik</td><td>社稷</td></tr><tr><td>3號線</td><td>309</td><td>미남역</td><td>Minam</td><td>美南</td></tr><tr><td>3號線</td><td>310</td><td>만덕역</td><td>Mandeok</td><td>萬德</td></tr><tr><td>3號線</td><td>311</td><td>남산정역</td><td>Namsanjeong</td><td>南山亭</td></tr><tr><td>3號線</td><td>312</td><td>숙등역</td><td>Sukdeung</td><td>淑嶝</td></tr><tr><td>3號線</td><td>313</td><td>덕천역</td><td>Deokcheon</td><td>德川</td></tr><tr><td>3號線</td><td>314</td><td>구포역</td><td>Gupo</td><td>龜浦</td></tr><tr><td>3號線</td><td>315</td><td>강서구청역</td><td>Gangseo-gu Office</td><td>江西區廳</td></tr><tr><td>3號線</td><td>316</td><td>체육공원역</td><td>Sports Park</td><td>體育公園</td></tr><tr><td>3號線</td><td>317</td><td>대저역</td><td>Daejeo</td><td>大渚</td></tr><tr><td>4號線</td><td>401</td><td>미남역</td><td>Minam</td><td>美男</td></tr><tr><td>4號線</td><td>402</td><td>동래역</td><td>Dongnae</td><td>東萊</td></tr><tr><td>4號線</td><td>403</td><td>수안역</td><td>Suan</td><td>水安</td></tr><tr><td>4號線</td><td>404</td><td>낙민역</td><td>Nangmin</td><td>樂民</td></tr><tr><td>4號線</td><td>405</td><td>충렬사역</td><td>Chungnyeolsa</td><td>忠烈祠</td></tr><tr><td>4號線</td><td>406</td><td>명장역</td><td>Myeongjang</td><td>名將</td></tr><tr><td>4號線</td><td>407</td><td>서동역</td><td>Seo-dong</td><td>西洞</td></tr><tr><td>4號線</td><td>408</td><td>금사역</td><td>Geumsa</td><td>錦沙</td></tr><tr><td>4號線</td><td>409</td><td>반여농산물시장역</td><td>Banyeo Agricultural Market</td><td>半餘農產品市場</td></tr><tr><td>4號線</td><td>410</td><td>석대역</td><td>Seokdae</td><td>石垈</td></tr><tr><td>4號線</td><td>411</td><td>영산대역</td><td>Youngsan University</td><td>英山大學</td></tr><tr><td>4號線</td><td>412</td><td>윗반송역</td><td>Witbansong</td><td>上半松</td></tr><tr><td>4號線</td><td>413</td><td>고촌역</td><td>Gochon</td><td>高村</td></tr><tr><td>4號線</td><td>414</td><td>안평역</td><td>Anpyeong</td><td>安平</td></tr><tr><td>Donghae</td><td>K110</td><td>부전역</td><td>Bujeon</td><td>釜田</td></tr><tr><td>Donghae</td><td>K111</td><td>거제해맞이역</td><td>Geojehaemaji</td><td>巨濟海迎</td></tr><tr><td>Donghae</td><td>K112</td><td>거제역</td><td>Geoje</td><td>巨濟</td></tr><tr><td>Donghae</td><td>K113</td><td>부산교육대학교역</td><td>Busan National University of Education</td><td>釜山國立教育大學</td></tr><tr><td>Donghae</td><td>K114</td><td>동래역</td><td>Dongnae</td><td>東萊</td></tr><tr><td>Donghae</td><td>K115</td><td>안락역</td><td>Allak</td><td>安樂</td></tr><tr><td>Donghae</td><td>K116</td><td>부산원동역</td><td>Busanwondong</td><td>釜山遠東</td></tr><tr><td>Donghae</td><td>K117</td><td>재송역</td><td>Jaesong</td><td>才成</td></tr><tr><td>Donghae</td><td>K118</td><td>센텀역</td><td>Centum</td><td>Centum</td></tr><tr><td>Donghae</td><td>K119</td><td>벡스코역</td><td>BEXCO(Busan Museum of Modern Art)</td><td>釜山現代美術館</td></tr><tr><td>Donghae</td><td>K120</td><td>신해운대역</td><td>Sinhaeundae</td><td>新海雲台</td></tr><tr><td>Donghae</td><td>K121</td><td>송정역</td><td>Songjeong</td><td>松亭</td></tr><tr><td>Donghae</td><td>K122</td><td>오시리아역</td><td>OSIRIA</td><td>OSIRIA</td></tr><tr><td>Donghae</td><td>K123</td><td>기장역</td><td>Gijang</td><td>機張</td></tr><tr><td>Donghae</td><td>K124</td><td>일광역</td><td>Ilgwang</td><td>日光</td></tr><tr><td>Donghae</td><td>K125</td><td>좌천역</td><td>Jwacheon</td><td>佐川</td></tr><tr><td>Donghae</td><td>K126</td><td>월래역</td><td>Wollae</td><td>月浦</td></tr><tr><td>Donghae</td><td>K127</td><td>서생역</td><td>Seosaeng</td><td>西生</td></tr><tr><td>Donghae</td><td>K128</td><td>남창역</td><td>Namchang</td><td>南昌</td></tr><tr><td>Donghae</td><td>K129</td><td>망양역</td><td>Mangyang</td><td>望陽</td></tr><tr><td>Donghae</td><td>K130</td><td>덕하역</td><td>Deokha</td><td>德下</td></tr><tr><td>Donghae</td><td>K131</td><td>개운포역</td><td>Gaeunpo</td><td>蓋雲浦</td></tr><tr><td>Donghae</td><td>K132</td><td>태화강역</td><td>Taehwagang</td><td>太和江</td></tr><tr><td>BGL</td><td>101</td><td>사상역</td><td>Sasang</td><td>沙上</td></tr><tr><td>BGL</td><td>102</td><td>괘법리뉴시티역</td><td>Gwaebeop Renecite</td><td>快普利新城</td></tr><tr><td>BGL</td><td>103</td><td>서부산유통지구역</td><td>Seobusan Yutongjigu</td><td>西釜山物流園區</td></tr><tr><td>BGL</td><td>104</td><td>김해국제공항역</td><td>Gimhae International Airport</td><td>金海國際機場</td></tr><tr><td>BGL</td><td>105</td><td>덕두역</td><td>Deokdu</td><td>德斗</td></tr><tr><td>BGL</td><td>106</td><td>등구역</td><td>Deunggu</td><td>登九</td></tr><tr><td>BGL</td><td>107</td><td>대저역</td><td>Daejeo</td><td>大渚</td></tr><tr><td>BGL</td><td>108</td><td>평강역</td><td>Pyeonggang</td><td>平岡</td></tr><tr><td>BGL</td><td>109</td><td>대사역</td><td>Daesa</td><td>大沙</td></tr><tr><td>BGL</td><td>110</td><td>불암역</td><td>Buram</td><td>夫岾</td></tr><tr><td>BGL</td><td>111</td><td>지내역</td><td>Jinae</td><td>珍田</td></tr><tr><td>BGL</td><td>112</td><td>김해대학역</td><td>Gimhae College</td><td>金海大學</td></tr><tr><td>BGL</td><td>113</td><td>인제대역</td><td>Inje University</td><td>仁濟大學</td></tr><tr><td>BGL</td><td>114</td><td>김해시청역</td><td>Gimhae City Hall</td><td>金海市廳</td></tr><tr><td>BGL</td><td>115</td><td>부원역</td><td>Buwon</td><td>扶元</td></tr><tr><td>BGL</td><td>116</td><td>봉황역</td><td>Bonghwang</td><td>鳳凰</td></tr><tr><td>BGL</td><td>117</td><td>수로왕릉역</td><td>Royal Tomb of King Suro</td><td>首露王陵</td></tr><tr><td>BGL</td><td>118</td><td>김해박물관역</td><td>Gimhae National Museum</td><td>金海國立博物館</td></tr><tr><td>BGL</td><td>119</td><td>연지공원역</td><td>Yeonji Park</td><td>漣池公園</td></tr><tr><td>BGL</td><td>120</td><td>장신대역</td><td>Presbyterian University</td><td>長神大學</td></tr><tr><td>BGL</td><td>121</td><td>가야대역</td><td>Kaya University</td><td>加耶大學</td></tr><tr><td>BGL</td><td>122</td><td>삼계역</td><td>Samgye</td><td>三溪</td></tr></tbody></table>
+    </div>
+  </section>
 </div>
 
 <script>
-  const qEl = document.getElementById('q');
-  const dateFilterEl = document.getElementById('dateFilter');
-  const emptyMsg = document.getElementById('emptyMsg');
+(function(){
+  // 主功能切換
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.page;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+      document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === target));
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  });
+
+  // 行程表搜尋與日期篩選
+  const qEl = document.getElementById('itineraryQ');
+  const dateFilterEl = document.getElementById('itineraryDateFilter');
+  const emptyMsg = document.getElementById('itineraryEmptyMsg');
 
   function initDates(){
-    const groups = document.querySelectorAll('details.group');
+    const groups = document.querySelectorAll('#itineraryPage details.group');
     dateFilterEl.innerHTML = '<option value="">全部日期</option>';
-    groups.forEach(g=>{
+    groups.forEach(g => {
       const label = g.querySelector('summary .date-badge')?.textContent.trim() || '';
       const opt = document.createElement('option');
-      opt.value = label; opt.textContent = label; dateFilterEl.appendChild(opt);
+      opt.value = label;
+      opt.textContent = label;
+      dateFilterEl.appendChild(opt);
       updateCount(g);
     });
   }
+
   function updateCount(group){
-    const rows = [...group.querySelectorAll('tbody tr')].filter(r=>r.style.display!=='none');
+    const rows = [...group.querySelectorAll('tbody tr')].filter(r => r.style.display !== 'none');
     const count = group.querySelector('.count');
     if(count) count.textContent = `共 ${rows.length} 筆`;
   }
 
-function applyFilters(){
-  const q = qEl.value.trim().toLowerCase();
-  const chosen = dateFilterEl.value;
-  const isFiltering = !!q || !!chosen;
-  let totalVisible = 0;
+  function applyItineraryFilters(){
+    const q = qEl.value.trim().toLowerCase();
+    const chosen = dateFilterEl.value;
+    const isFiltering = !!q || !!chosen;
+    let totalVisible = 0;
 
-  document.querySelectorAll('details.group').forEach(g=>{
-    const dateLabel = g.querySelector('summary .date-badge')?.textContent.trim() || '';
-    const matchDate = !chosen || chosen===dateLabel;
-    let groupVisible = 0;
+    document.querySelectorAll('#itineraryPage details.group').forEach(g => {
+      const dateLabel = g.querySelector('summary .date-badge')?.textContent.trim() || '';
+      const matchDate = !chosen || chosen === dateLabel;
+      let groupVisible = 0;
 
-    g.style.display = '';
-    g.querySelectorAll('tbody tr').forEach(tr=>{
-      const text = tr.textContent.toLowerCase();
-      const ok = matchDate && (!q || text.includes(q));
-      tr.style.display = ok ? '' : 'none';
-      if(ok) groupVisible++;
+      g.style.display = '';
+      g.querySelectorAll('tbody tr').forEach(tr => {
+        const text = tr.textContent.toLowerCase();
+        const ok = matchDate && (!q || text.includes(q));
+        tr.style.display = ok ? '' : 'none';
+        if(ok) groupVisible++;
+      });
+
+      updateCount(g);
+
+      if(groupVisible === 0){
+        g.style.display = 'none';
+        if(isFiltering) g.open = false;
+      }else{
+        totalVisible += groupVisible;
+        g.style.display = '';
+        if(isFiltering) g.open = true;
+      }
     });
 
-    updateCount(g);
+    emptyMsg.style.display = totalVisible ? 'none' : 'block';
 
-    if(groupVisible === 0){
-      g.style.display = 'none';
-      if(isFiltering) g.open = false;
-    }else{
-      totalVisible += groupVisible;
-      g.style.display = '';
-      if(isFiltering) g.open = true;
+    if(!isFiltering){
+      document.querySelectorAll('#itineraryPage details.group').forEach(g => g.open = false);
     }
-  });
-
-  emptyMsg.style.display = totalVisible ? 'none' : 'block';
-
-  if(isFiltering && totalVisible){
-    const firstOpen = document.querySelector('details.group[open]');
-    if(firstOpen) firstOpen.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
-  // ★ 新增：沒有篩選時自動收合
-  if(!isFiltering){
-    document.querySelectorAll('details.group').forEach(g=> g.open = false);
-  }
-}
-
-
-
-  document.getElementById('expandAll').addEventListener('click',()=>{
-    document.querySelectorAll('details.group').forEach(g=> g.open = true);
+  document.getElementById('expandAll').addEventListener('click', () => {
+    document.querySelectorAll('#itineraryPage details.group').forEach(g => g.open = true);
   });
-  document.getElementById('collapseAll').addEventListener('click',()=>{
-    document.querySelectorAll('details.group').forEach(g=> g.open = false);
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    document.querySelectorAll('#itineraryPage details.group').forEach(g => g.open = false);
   });
-
-  qEl.addEventListener('input', applyFilters);
-  dateFilterEl.addEventListener('change', applyFilters);
+  qEl.addEventListener('input', applyItineraryFilters);
+  dateFilterEl.addEventListener('change', applyItineraryFilters);
 
   initDates();
-  applyFilters();
+  applyItineraryFilters();
+
+  // 地鐵站搜尋、標記、點擊複製
+  const metroQ = document.getElementById('metroQ');
+  const metroClear = document.getElementById('metroClearBtn');
+  const metroCount = document.getElementById('metroCount');
+  const metroTable = document.getElementById('metroTable');
+
+  function normalize(s){ return (s || '').toString().toLowerCase(); }
+
+  function clearMarksIn(el){
+    el.querySelectorAll('mark.search-hit').forEach(m => {
+      const t = document.createTextNode(m.textContent);
+      const p = m.parentNode;
+      if(p){
+        p.replaceChild(t, m);
+        if(p.normalize) p.normalize();
+      }
+    });
+  }
+
+  function highlightCell(td, terms){
+    clearMarksIn(td);
+    if(!terms.length) return;
+    const text = td.textContent || '';
+    const escaped = terms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    if(!escaped.length) return;
+    const re = new RegExp('(' + escaped.join('|') + ')', 'gi');
+    td.innerHTML = text.replace(re, m => `<mark class="search-hit">${m}</mark>`);
+  }
+
+  function getMetroRows(){
+    return Array.from(metroTable.querySelectorAll('tbody tr'));
+  }
+
+  function applyMetroFilter(){
+    const terms = normalize(metroQ.value).trim().split(/\s+/).filter(Boolean);
+    const rows = getMetroRows();
+    let shown = 0;
+
+    rows.forEach(tr => {
+      const tds = Array.from(tr.cells);
+      tds.forEach(td => clearMarksIn(td));
+
+      if(!terms.length){
+        tr.classList.remove('hide-row');
+        shown++;
+        return;
+      }
+
+      const rowText = normalize(tds.map(td => td.textContent).join(' '));
+      const ok = terms.every(t => rowText.includes(t));
+
+      if(ok){
+        tr.classList.remove('hide-row');
+        shown++;
+        tds.forEach(td => highlightCell(td, terms));
+      }else{
+        tr.classList.add('hide-row');
+      }
+    });
+
+    metroCount.textContent = terms.length ? `符合：${shown} 筆` : '';
+  }
+
+  function debounce(fn, ms){
+    let t;
+    return function(){
+      clearTimeout(t);
+      t = setTimeout(fn, ms);
+    };
+  }
+
+  metroQ.addEventListener('input', debounce(applyMetroFilter, 120));
+  metroQ.addEventListener('search', applyMetroFilter);
+  metroClear.addEventListener('click', () => {
+    metroQ.value = '';
+    applyMetroFilter();
+    metroQ.focus();
+  });
+
+  metroTable.querySelectorAll('td').forEach(td => {
+    td.addEventListener('click', async () => {
+      const text = td.innerText.trim();
+      if(!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        td.classList.add('copied');
+        setTimeout(() => td.classList.remove('copied'), 600);
+      } catch(err) {
+        alert('複製失敗：' + err);
+      }
+    });
+  });
+
+  applyMetroFilter();
+})();
 </script>
 </body>
 </html>
