@@ -1,0 +1,117 @@
+<!doctype html>
+
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>地址文字複製</title>
+  <style>
+    table{border-collapse:collapse;width:100%}
+    th,td{border:1px solid #e2e8f0;padding:8px 10px;vertical-align:top;cursor:pointer}
+    th{background:#f1f5f9;text-align:left;cursor:default}
+	td{cursor:pointer}
+    .copied{background:#d1fae5 !important;transition:background 0.6s}
+  </style>
+</head>
+
+
+
+<body>
+<!-- □ 關鍵字搜尋工具列（可多關鍵字，以空白分隔） -->
+<div class="toolbar" role="region" aria-label="關鍵字搜尋工具列">
+  <label class="sr-only" for="kw">搜尋:</label>
+  <input id="kw" type="text" placeholder="輸入關鍵字">
+  <button id="clear" type="button" title="清除並重置">清除</button>
+  <!--<div class="count" id="count" aria-live="polite"></div>-->
+  <label class="count" id="count" aria-live="polite"></label>
+
+</div>
+</br>
+點擊內容文字可複製
+<table id="dataTable">
+
+
+<thead><tr><th>目的地</th><th>對應韓文或地址</th><th>地址/NAVER MAP電話</th><th>Naver-MAP</th></tr></thead>
+
+<tbody><tr><td>首爾麻浦魯內酒店</td><td>로이넷호텔 서울 마포</td><td>서울특별시 마포구 마포대로67</td><td><a href="https://naver.me/FcmAqKRN" target="_blank" rel="noopener noreferrer">https://naver.me/FcmAqKRN</a></td></tr></tbody>
+
+<tbody><tr><td>元脊堂馬鈴薯排骨湯</td><td>서울 마포구 도화동 179-1</td><td>0507-1325-7612</td><td><a href="https://naver.me/x5Goe1bb" target="_blank" rel="noopener noreferrer">https://naver.me/x5Goe1bb</a></td></tr></tbody>
+
+<tbody><tr><td>益善洞牧場烤肉</td><td>서울 종로구 묘동 160-1</td><td>0507-1351-4440</td><td><a href="https://naver.me/GHvqUTKa" target="_blank" rel="noopener noreferrer">https://naver.me/GHvqUTKa</a></td></tr></tbody>
+
+<tbody><tr><td>通仁市場顧客滿足中心</td><td>서울 종로구 통인동 10-3</td><td>02-722-0936</td><td><a href="https://naver.me/xucpK151" target="_blank" rel="noopener noreferrer">https://naver.me/xucpK151</a></td></tr></tbody>
+
+<tbody><tr><td>盤浦大橋彩虹噴泉秀</td><td>서울 서초구 반포동 649-1</td><td>02-3780-0578</td><td><a href="https://naver.me/5LHsKvrH" target="_blank" rel="noopener noreferrer">https://naver.me/5LHsKvrH</a></td></tr></tbody>
+
+<!--
+<tbody>
+<tr><td>世界向日葵瞭望臺</td><td>누리바라기전망대</td><td>부산 서구 남부민동 50-40</td><td><a href="https://naver.me/GPdYu9LQ" target="_blank" rel="noopener noreferrer">https://naver.me/GPdYu9LQ</a>
+</br>
+<a href="https://maps.app.goo.gl/hSNcdrp3uheLMEqu8" target="_blank" rel="noopener noreferrer">https://maps.app.goo.gl/hSNcdrp3uheLMEqu8</a>
+</td></tr>
+</tbody>
+-->
+
+</table>
+
+
+<script>
+    document.querySelectorAll("td").forEach(td => {
+      // 排除含有 http(s) 連結的欄位
+      if (td.querySelector("a")) return;
+
+      td.addEventListener("click", async () => {
+        try {
+          const text = td.innerText.trim();
+          await navigator.clipboard.writeText(text);
+
+          td.classList.add("copied");
+          setTimeout(() => td.classList.remove("copied"), 600);
+        } catch (err) {
+          alert("複製失敗：" + err);
+        }
+      });
+    });
+	
+	const kw = document.getElementById("kw");
+const clearBtn = document.getElementById("clear");
+const tbodyRows = Array.from(document.querySelectorAll("#dataTable tbody tr"));
+const countEl = document.getElementById("count");
+
+function updateCount() {
+  const visible = tbodyRows.filter(r => !r.hidden).length;
+  countEl.textContent = visible + " / " + tbodyRows.length + " 筆";
+}
+
+function applyFilter() {
+  const q = kw.value.trim();
+  if (!q) {
+    tbodyRows.forEach(r => r.hidden = false); // 無關鍵字時顯示全部
+    updateCount();
+    return;
+  }
+  // 支援多關鍵字：空白分隔；需全部命中才顯示（AND條件）
+  const terms = q.split(/\s+/).filter(Boolean).map(s => s.toLowerCase());
+  tbodyRows.forEach(r => {
+    const text = r.innerText.toLowerCase();
+    const hit = terms.every(t => text.includes(t));
+    r.hidden = !hit;
+  });
+  updateCount();
+}
+
+kw.addEventListener("input", applyFilter);
+clearBtn.addEventListener("click", () => {
+  kw.value = "";
+  applyFilter();     // 立即重置回「顯示全部」
+  kw.focus();
+});
+
+updateCount(); // 初始顯示筆數
+	
+  </script>
+
+</body>
+
+
+</html>
