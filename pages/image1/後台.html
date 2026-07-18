@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>圖片分類後台管理－同資料夾圖片版</title>
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --bg:#f4f6f8;--panel:#fff;--line:#d9dee3;--text:#1f2937;
+      --muted:#6b7280;--primary:#1264a3;--danger:#b42318;
+    }
+    body{
+      margin:0;background:var(--bg);color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;
+    }
+    button,input,textarea,select{font:inherit}
+    button{cursor:pointer}
+    .topbar{
+      position:sticky;top:0;z-index:50;
+      display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+      padding:12px;background:rgba(255,255,255,.96);
+      border-bottom:1px solid var(--line);backdrop-filter:blur(10px)
+    }
+    .topbar h1{margin:0 14px 0 0;font-size:20px}
+    .btn{
+      border:1px solid var(--line);background:#fff;color:var(--text);
+      border-radius:8px;padding:9px 13px;font-weight:600
+    }
+    .btn:hover{background:#f3f4f6}
+    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .btn.danger{background:#fff;color:var(--danger);border-color:#f0b4ae}
+    .btn.small{padding:6px 9px;font-size:14px}
+    .layout{
+      display:grid;grid-template-columns:minmax(360px,520px) 1fr;
+      gap:16px;padding:16px;max-width:1600px;margin:auto
+    }
+    .panel{
+      background:var(--panel);border:1px solid var(--line);
+      border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.05)
+    }
+    .panel-head{
+      display:flex;justify-content:space-between;gap:12px;align-items:center;
+      padding:14px 16px;border-bottom:1px solid var(--line)
+    }
+    .panel-head h2{font-size:18px;margin:0}
+    .panel-body{padding:16px}
+    .field{margin-bottom:14px}
+    .field label{display:block;font-weight:700;margin-bottom:6px}
+    .field input,.field textarea{
+      width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff
+    }
+    .hint{font-size:13px;color:var(--muted);line-height:1.5}
+    .category-list{display:flex;flex-direction:column;gap:12px}
+    .category-card{
+      border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff
+    }
+    .category-bar{
+      display:flex;gap:8px;align-items:center;padding:10px;background:#f8fafc;border-bottom:1px solid var(--line)
+    }
+    .category-bar input{flex:1;border:1px solid var(--line);border-radius:7px;padding:8px;font-weight:700}
+    .category-actions{display:flex;gap:6px;flex-wrap:wrap}
+    .images{padding:10px;display:flex;flex-direction:column;gap:10px}
+    .image-row{
+      display:grid;grid-template-columns:90px 1fr auto;gap:10px;align-items:start;
+      border:1px solid #e5e7eb;border-radius:9px;padding:10px;background:#fff
+    }
+    .thumb{
+      width:90px;height:72px;object-fit:cover;border-radius:7px;background:#e5e7eb;border:1px solid #ddd
+    }
+    .image-fields{display:grid;gap:8px}
+    .image-fields input,.image-fields textarea{
+      width:100%;border:1px solid var(--line);border-radius:7px;padding:8px
+    }
+    .row-actions{display:flex;flex-direction:column;gap:6px}
+    .dropzone{
+      border:2px dashed #9ca3af;border-radius:9px;padding:14px;text-align:center;color:var(--muted);
+      background:#fafafa
+    }
+    .preview-wrap{min-height:720px;overflow:hidden}
+    iframe{width:100%;height:78vh;border:0;background:#fff;border-radius:0 0 12px 12px}
+    .status{
+      margin-left:auto;font-size:13px;color:var(--muted)
+    }
+    .empty{
+      padding:24px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:9px
+    }
+    @media(max-width:1000px){
+      .layout{grid-template-columns:1fr}
+      iframe{height:70vh}
+    }
+    @media(max-width:640px){
+      .topbar h1{width:100%}
+      .layout{padding:10px}
+      .image-row{grid-template-columns:72px 1fr}
+      .thumb{width:72px;height:60px}
+      .row-actions{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <h1>圖片分類後台管理－同資料夾圖片版</h1>
+    <button class="btn" id="addCategoryBtn">＋新增標籤</button>
+    <button class="btn" id="saveBtn">儲存到瀏覽器</button>
+    <button class="btn" id="loadBtn">讀取已儲存資料</button>
+    <button class="btn" id="exportJsonBtn">匯出設定檔</button>
+    <label class="btn" for="importJsonInput">匯入設定檔</label>
+    <input id="importJsonInput" type="file" accept=".json,application/json" hidden>
+    <button class="btn primary" id="exportHtmlBtn">匯出前台 HTML</button>
+    <span class="status" id="status">尚未修改</span>
+  </header>
+
+  <main class="layout">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>內容維護</h2>
+      </div>
+      <div class="panel-body">
+        <div class="field">
+          <label for="siteTitle">前台標題</label>
+          <input id="siteTitle" value="圖片分類">
+        </div>
+        <div class="field">
+          <label for="pageDescription">說明文字</label>
+          <textarea id="pageDescription" rows="2" placeholder="可留空"></textarea>
+        </div>
+        <div class="hint" style="margin-bottom:14px">
+          匯出的前台 HTML 會直接引用圖片檔名。請把前台 HTML 與所有圖片放在同一個資料夾；檔名包含大小寫、空格與副檔名都必須完全一致。
+        </div>
+        <div id="categoryList" class="category-list"></div>
+      </div>
+    </section>
+
+    <section class="panel preview-wrap">
+      <div class="panel-head">
+        <h2>前台即時預覽</h2>
+        <button class="btn small" id="refreshPreviewBtn">重新整理預覽</button>
+      </div>
+      <iframe id="previewFrame" title="前台預覽"></iframe>
+    </section>
+  </main>
+
+<script>
+"use strict";
+
+const state = {
+  title: "圖片分類",
+  description: "",
+  categories: [
+    {
+      id: makeId(),
+      name: "行程資料",
+      images: []
+    },
+    {
+      id: makeId(),
+      name: "地鐵資訊",
+      images: []
+    }
+  ]
+};
+
+const $ = (selector) => document.querySelector(selector);
+const categoryList = $("#categoryList");
+const siteTitle = $("#siteTitle");
+const pageDescription = $("#pageDescription");
+const statusEl = $("#status");
+const previewFrame = $("#previewFrame");
+
+let previewTimer = null;
+
+function makeId() {
+  return "id-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8);
+}
+
+function setStatus(text) {
+  statusEl.textContent = text;
+}
+
+function markChanged() {
+  setStatus("有尚未儲存的修改");
+  schedulePreview();
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function schedulePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(updatePreview, 250);
+}
+
+function renderEditor() {
+  state.title = siteTitle.value;
+  state.description = pageDescription.value;
+  categoryList.innerHTML = "";
+
+  if (!state.categories.length) {
+    categoryList.innerHTML = '<div class="empty">目前沒有標籤，請先按「新增標籤」。</div>';
+    updatePreview();
+    return;
+  }
+
+  state.categories.forEach((category, categoryIndex) => {
+    const card = document.createElement("div");
+    card.className = "category-card";
+
+    const bar = document.createElement("div");
+    bar.className = "category-bar";
+
+    const nameInput = document.createElement("input");
+    nameInput.value = category.name;
+    nameInput.placeholder = "標籤名稱";
+    nameInput.addEventListener("input", () => {
+      category.name = nameInput.value;
+      markChanged();
+    });
+
+    const actions = document.createElement("div");
+    actions.className = "category-actions";
+
+    actions.append(
+      makeButton("上移", () => moveCategory(categoryIndex, -1)),
+      makeButton("下移", () => moveCategory(categoryIndex, 1)),
+      makeButton("新增圖片", () => chooseImages(category.id)),
+      makeButton("刪除標籤", () => removeCategory(categoryIndex), "danger")
+    );
+
+    bar.append(nameInput, actions);
+
+    const imagesWrap = document.createElement("div");
+    imagesWrap.className = "images";
+
+    const dropzone = document.createElement("div");
+    dropzone.className = "dropzone";
+    dropzone.textContent = "可拖曳多張圖片到這裡，或按「新增圖片」";
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.style.background = "#eef6ff";
+    });
+    dropzone.addEventListener("dragleave", () => {
+      dropzone.style.background = "#fafafa";
+    });
+    dropzone.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      dropzone.style.background = "#fafafa";
+      await addImageFiles(category.id, [...e.dataTransfer.files]);
+    });
+    imagesWrap.append(dropzone);
+
+    if (!category.images.length) {
+      const empty = document.createElement("div");
+      empty.className = "hint";
+      empty.textContent = "此標籤尚未放入圖片。";
+      imagesWrap.append(empty);
+    }
+
+    category.images.forEach((image, imageIndex) => {
+      const row = document.createElement("div");
+      row.className = "image-row";
+
+      const thumb = document.createElement("img");
+      thumb.className = "thumb";
+      thumb.src = image.previewUrl || image.relativePath || image.fileName || "";
+      thumb.alt = image.caption || image.fileName || "圖片";
+
+      const fields = document.createElement("div");
+      fields.className = "image-fields";
+
+      const pathInput = document.createElement("input");
+      pathInput.value = image.relativePath || image.fileName || "";
+      pathInput.placeholder = "圖片檔名，例如：map1.jpg";
+      pathInput.addEventListener("input", () => {
+        image.relativePath = pathInput.value.trim();
+        thumb.src = image.relativePath;
+        markChanged();
+      });
+
+      const caption = document.createElement("input");
+      caption.value = image.caption || "";
+      caption.placeholder = "圖片標題";
+      caption.addEventListener("input", () => {
+        image.caption = caption.value;
+        markChanged();
+      });
+
+      const note = document.createElement("textarea");
+      note.rows = 2;
+      note.value = image.note || "";
+      note.placeholder = "補充說明，可留空";
+      note.addEventListener("input", () => {
+        image.note = note.value;
+        markChanged();
+      });
+
+      fields.append(pathInput, caption, note);
+
+      const rowActions = document.createElement("div");
+      rowActions.className = "row-actions";
+      rowActions.append(
+        makeButton("上移", () => moveImage(categoryIndex, imageIndex, -1), "small"),
+        makeButton("下移", () => moveImage(categoryIndex, imageIndex, 1), "small"),
+        makeButton("刪除", () => removeImage(categoryIndex, imageIndex), "danger small")
+      );
+
+      row.append(thumb, fields, rowActions);
+      imagesWrap.append(row);
+    });
+
+    card.append(bar, imagesWrap);
+    categoryList.append(card);
+  });
+
+  updatePreview();
+}
+
+function makeButton(text, handler, extraClass="small") {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "btn " + extraClass;
+  btn.textContent = text;
+  btn.addEventListener("click", handler);
+  return btn;
+}
+
+function addCategory() {
+  state.categories.push({
+    id: makeId(),
+    name: "新標籤",
+    images: []
+  });
+  renderEditor();
+  markChanged();
+}
+
+function removeCategory(index) {
+  const category = state.categories[index];
+  if (!confirm(`確定刪除「${category.name || "未命名標籤"}」及其中所有圖片？`)) return;
+  state.categories.splice(index, 1);
+  renderEditor();
+  markChanged();
+}
+
+function moveCategory(index, direction) {
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= state.categories.length) return;
+  [state.categories[index], state.categories[newIndex]] =
+    [state.categories[newIndex], state.categories[index]];
+  renderEditor();
+  markChanged();
+}
+
+function moveImage(categoryIndex, imageIndex, direction) {
+  const images = state.categories[categoryIndex].images;
+  const newIndex = imageIndex + direction;
+  if (newIndex < 0 || newIndex >= images.length) return;
+  [images[imageIndex], images[newIndex]] = [images[newIndex], images[imageIndex]];
+  renderEditor();
+  markChanged();
+}
+
+function removeImage(categoryIndex, imageIndex) {
+  state.categories[categoryIndex].images.splice(imageIndex, 1);
+  renderEditor();
+  markChanged();
+}
+
+function chooseImages(categoryId) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.multiple = true;
+  input.addEventListener("change", async () => {
+    await addImageFiles(categoryId, [...input.files]);
+  });
+  input.click();
+}
+
+async function addImageFiles(categoryId, files) {
+  const category = state.categories.find(c => c.id === categoryId);
+  if (!category) return;
+
+  const imageFiles = files.filter(file => file.type.startsWith("image/"));
+  if (!imageFiles.length) {
+    alert("請選擇圖片檔案。");
+    return;
+  }
+
+  for (const file of imageFiles) {
+    category.images.push({
+      id: makeId(),
+      fileName: file.name,
+      caption: file.name.replace(/\.[^.]+$/, ""),
+      note: "",
+      relativePath: file.name,
+      previewUrl: URL.createObjectURL(file)
+    });
+  }
+
+  renderEditor();
+  markChanged();
+}
+
+function syncTopFields() {
+  state.title = siteTitle.value.trim() || "圖片分類";
+  state.description = pageDescription.value.trim();
+}
+
+function buildFrontendHtml() {
+  syncTopFields();
+
+  const validCategories = state.categories.map((category, index) => ({
+    ...category,
+    name: category.name.trim() || `標籤 ${index + 1}`
+  }));
+
+  const tabs = validCategories.map((category, index) => `
+    <button type="button" class="tab-button${index === 0 ? " active" : ""}" data-target="${escapeHtml(category.id)}">
+      ${escapeHtml(category.name)}
+    </button>`).join("");
+
+  const sections = validCategories.map((category, index) => {
+    const images = category.images.map(image => `
+      <figure class="image-card">
+        <img class="gallery-image"
+             src="${escapeHtml(image.relativePath || image.fileName || "")}"
+             data-full="${escapeHtml(image.relativePath || image.fileName || "")}"
+             alt="${escapeHtml(image.caption || image.fileName || "圖片")}"
+             loading="lazy">
+        <figcaption class="image-caption">
+          <strong>${escapeHtml(image.caption || "")}</strong>
+          ${image.note ? `<div class="image-note">${escapeHtml(image.note)}</div>` : ""}
+        </figcaption>
+      </figure>`).join("");
+
+    return `
+    <section id="${escapeHtml(category.id)}" class="gallery-section${index === 0 ? " active" : ""}">
+      <h2 class="section-title">${escapeHtml(category.name)}</h2>
+      <div class="gallery-grid">
+        ${images || '<div class="empty-message">此分類尚無圖片</div>'}
+      </div>
+    </section>`;
+  }).join("");
+
+  const safeTitle = escapeHtml(state.title);
+  const safeDescription = escapeHtml(state.description);
+
+  return `<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,user-scalable=yes">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>${safeTitle}</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;background:#f4f6f8;color:#222}
+    .page-header{position:sticky;top:0;z-index:50;padding:14px 12px 10px;background:rgba(255,255,255,.96);border-bottom:1px solid #ddd;backdrop-filter:blur(10px)}
+    .page-title{margin:0 0 8px;font-size:22px;text-align:center}
+    .page-description{margin:0 0 12px;text-align:center;color:#666;font-size:14px}
+    .tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;-webkit-overflow-scrolling:touch}
+    .tab-button{flex:0 0 auto;min-height:42px;padding:9px 16px;border:1px solid #ccd2d8;border-radius:22px;background:#fff;color:#333;font-size:16px;font-weight:600;white-space:nowrap}
+    .tab-button.active{border-color:#1264a3;background:#1264a3;color:#fff}
+    .content{width:min(1200px,100%);margin:auto;padding:16px 12px 40px}
+    .gallery-section{display:none}.gallery-section.active{display:block}
+    .section-title{margin:4px 0 14px;font-size:20px}
+    .gallery-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .image-card{overflow:hidden;margin:0;border-radius:12px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+    .gallery-image{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:#e8ebee;cursor:zoom-in}
+    .image-caption{padding:10px 12px;font-size:15px;line-height:1.5}
+    .image-caption strong:empty{display:none}
+    .image-note{margin-top:4px;color:#666;font-size:14px;white-space:pre-wrap}
+    .empty-message{grid-column:1/-1;padding:30px;text-align:center;color:#777;background:#fff;border-radius:10px}
+    @media(min-width:700px){.gallery-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(min-width:1000px){.gallery-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    .lightbox{position:fixed;inset:0;z-index:9999;display:none;background:rgba(0,0,0,.94);overflow:hidden}
+    .lightbox.open{display:block}
+    .lightbox-toolbar{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:8px 12px;color:#fff;background:linear-gradient(to bottom,rgba(0,0,0,.75),rgba(0,0,0,0));pointer-events:none}
+    .lightbox-title{padding-right:12px;font-size:15px;text-shadow:0 1px 3px #000}
+    .close-button{width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:32px;cursor:pointer;pointer-events:auto}
+    .lightbox-stage{position:absolute;inset:0;overflow:auto;display:flex;align-items:center;justify-content:center;padding:68px 12px 24px;touch-action:pan-x pan-y pinch-zoom;-webkit-overflow-scrolling:touch}
+    .lightbox-image{display:block;max-width:100%;max-height:calc(100vh - 92px);width:auto;height:auto;object-fit:contain;user-select:none;-webkit-user-drag:none}
+    body.lightbox-open{overflow:hidden}
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1 class="page-title">${safeTitle}</h1>
+    ${safeDescription ? `<p class="page-description">${safeDescription}</p>` : ""}
+    <nav class="tabs" aria-label="圖片分類">${tabs}</nav>
+  </header>
+
+  <main class="content">${sections}</main>
+
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="圖片放大檢視">
+    <div class="lightbox-toolbar">
+      <div id="lightboxTitle" class="lightbox-title"></div>
+      <button id="closeLightbox" class="close-button" type="button" aria-label="關閉">×</button>
+    </div>
+    <div id="lightboxStage" class="lightbox-stage">
+      <img id="lightboxImage" class="lightbox-image" src="" alt="">
+    </div>
+  </div>
+
+  <script>
+  "use strict";
+  const tabButtons=document.querySelectorAll(".tab-button");
+  const gallerySections=document.querySelectorAll(".gallery-section");
+  tabButtons.forEach(button=>{
+    button.addEventListener("click",()=>{
+      const target=document.getElementById(button.dataset.target);
+      if(!target)return;
+      tabButtons.forEach(x=>x.classList.remove("active"));
+      gallerySections.forEach(x=>x.classList.remove("active"));
+      button.classList.add("active");
+      target.classList.add("active");
+      window.scrollTo({top:0,behavior:"smooth"});
+    });
+  });
+
+  const lightbox=document.getElementById("lightbox");
+  const lightboxImage=document.getElementById("lightboxImage");
+  const lightboxTitle=document.getElementById("lightboxTitle");
+  const closeBtn=document.getElementById("closeLightbox");
+  const stage=document.getElementById("lightboxStage");
+
+  function openLightbox(img){
+    lightboxImage.src=img.dataset.full||img.src;
+    lightboxImage.alt=img.alt||"圖片";
+    lightboxTitle.textContent=img.alt||"圖片";
+    lightbox.classList.add("open");
+    document.body.classList.add("lightbox-open");
+  }
+  function closeLightbox(){
+    lightbox.classList.remove("open");
+    document.body.classList.remove("lightbox-open");
+    lightboxImage.src="";
+  }
+  document.querySelectorAll(".gallery-image").forEach(img=>img.addEventListener("click",()=>openLightbox(img)));
+  closeBtn.addEventListener("click",closeLightbox);
+  lightbox.addEventListener("click",e=>{if(e.target===lightbox||e.target===stage)closeLightbox()});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLightbox()});
+  <\/script>
+</body>
+</html>`;
+}
+
+function updatePreview() {
+  previewFrame.srcdoc = buildFrontendHtml();
+}
+
+function downloadBlob(content, fileName, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportHtml() {
+  const missing = [];
+  state.categories.forEach(category => {
+    category.images.forEach(image => {
+      if (!(image.relativePath || image.fileName || "").trim()) {
+        missing.push(image.caption || "未命名圖片");
+      }
+    });
+  });
+  if (missing.length) {
+    alert("下列圖片尚未填寫檔名：\n" + missing.join("\n"));
+    return;
+  }
+
+  const html = buildFrontendHtml();
+  const fileName = (state.title || "圖片分類").replace(/[\\/:*?"<>|]+/g, "_") + ".html";
+  downloadBlob(html, fileName, "text/html;charset=utf-8");
+  setStatus("已匯出前台 HTML；請與圖片放在同一資料夾");
+}
+
+function exportJson() {
+  syncTopFields();
+  const content = JSON.stringify(state, null, 2);
+  downloadBlob(content, "圖片分類設定.json", "application/json;charset=utf-8");
+  setStatus("已匯出設定檔");
+}
+
+function saveLocal() {
+  syncTopFields();
+  try {
+    localStorage.setItem("imageGalleryAdminData", JSON.stringify(state));
+    setStatus("已儲存到此瀏覽器");
+  } catch (error) {
+    alert("儲存失敗。圖片可能太多，已超過瀏覽器容量。請改用「匯出設定檔」。");
+  }
+}
+
+function loadLocal() {
+  const raw = localStorage.getItem("imageGalleryAdminData");
+  if (!raw) {
+    alert("此瀏覽器尚無已儲存資料。");
+    return;
+  }
+  try {
+    applyImportedState(JSON.parse(raw));
+    setStatus("已讀取瀏覽器資料");
+  } catch {
+    alert("已儲存資料格式錯誤。");
+  }
+}
+
+function applyImportedState(data) {
+  if (!data || !Array.isArray(data.categories)) throw new Error("invalid");
+  state.title = data.title || "圖片分類";
+  state.description = data.description || "";
+  state.categories = data.categories.map(category => ({
+    id: category.id || makeId(),
+    name: category.name || "未命名標籤",
+    images: Array.isArray(category.images) ? category.images.map(image => ({
+      id: image.id || makeId(),
+      fileName: image.fileName || "",
+      caption: image.caption || "",
+      note: image.note || "",
+      relativePath: image.relativePath || image.fileName || "",
+      previewUrl: ""
+    })) : []
+  }));
+  siteTitle.value = state.title;
+  pageDescription.value = state.description;
+  renderEditor();
+}
+
+siteTitle.addEventListener("input", () => {
+  state.title = siteTitle.value;
+  markChanged();
+});
+pageDescription.addEventListener("input", () => {
+  state.description = pageDescription.value;
+  markChanged();
+});
+
+$("#addCategoryBtn").addEventListener("click", addCategory);
+$("#saveBtn").addEventListener("click", saveLocal);
+$("#loadBtn").addEventListener("click", loadLocal);
+$("#exportHtmlBtn").addEventListener("click", exportHtml);
+$("#exportJsonBtn").addEventListener("click", exportJson);
+$("#refreshPreviewBtn").addEventListener("click", updatePreview);
+
+$("#importJsonInput").addEventListener("change", async (event) => {
+  const file = event.target.files[0];
+  event.target.value = "";
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    applyImportedState(data);
+    setStatus("已匯入設定檔");
+  } catch {
+    alert("設定檔格式錯誤，無法匯入。");
+  }
+});
+
+renderEditor();
+</script>
+</body>
+</html>
