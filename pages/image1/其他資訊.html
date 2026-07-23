@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,user-scalable=yes">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>其他資訊</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;background:#f4f6f8;color:#222}
+    .page-header{position:sticky;top:0;z-index:50;padding:14px 12px 10px;background:rgba(255,255,255,.96);border-bottom:1px solid #ddd;backdrop-filter:blur(10px)}
+    .page-title{margin:0 0 8px;font-size:22px;text-align:center}
+    .page-description{margin:0 0 12px;text-align:center;color:#666;font-size:14px}
+    .tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;-webkit-overflow-scrolling:touch}
+    .tab-button{flex:0 0 auto;min-height:42px;padding:9px 16px;border:1px solid #ccd2d8;border-radius:22px;background:#fff;color:#333;font-size:16px;font-weight:600;white-space:nowrap}
+    .tab-button.active{border-color:#1264a3;background:#1264a3;color:#fff}
+    .content{width:min(1200px,100%);margin:auto;padding:16px 12px 40px}
+    .gallery-section{display:none}.gallery-section.active{display:block}
+    .section-title{margin:4px 0 14px;font-size:20px}
+    .gallery-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .image-card{overflow:hidden;margin:0;border-radius:12px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+    .gallery-image{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:#e8ebee;cursor:zoom-in}
+    .image-caption{padding:10px 12px;font-size:15px;line-height:1.5}
+    .image-caption strong:empty{display:none}
+    .image-note{margin-top:4px;color:#666;font-size:14px;white-space:pre-wrap}
+    .empty-message{grid-column:1/-1;padding:30px;text-align:center;color:#777;background:#fff;border-radius:10px}
+    @media(min-width:700px){.gallery-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(min-width:1000px){.gallery-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    .lightbox{position:fixed;inset:0;z-index:9999;display:none;background:rgba(0,0,0,.94);overflow:hidden}
+    .lightbox.open{display:block}
+    .lightbox-toolbar{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:8px 12px;color:#fff;background:linear-gradient(to bottom,rgba(0,0,0,.75),rgba(0,0,0,0));pointer-events:none}
+    .lightbox-title{padding-right:12px;font-size:15px;text-shadow:0 1px 3px #000}
+    .close-button{width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:32px;cursor:pointer;pointer-events:auto}
+    .lightbox-stage{position:absolute;inset:0;overflow:auto;display:flex;align-items:center;justify-content:center;padding:68px 12px 24px;touch-action:pan-x pan-y pinch-zoom;-webkit-overflow-scrolling:touch}
+    .lightbox-image{display:block;max-width:100%;max-height:calc(100vh - 92px);width:auto;height:auto;object-fit:contain;user-select:none;-webkit-user-drag:none}
+    body.lightbox-open{overflow:hidden}
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1 class="page-title">其他資訊</h1>
+    
+    <nav class="tabs" aria-label="圖片分類">
+    <button type="button" class="tab-button active" data-target="id-mrpv6pw2-w8jv9q">
+      小黃卡(入境卡)
+    </button>
+    <button type="button" class="tab-button" data-target="id-mrpv6pw2-4upe09">
+      市區(內)退稅
+    </button>
+    <button type="button" class="tab-button" data-target="id-mrpvd5mq-gx4qjz">
+      飯店資訊
+    </button>
+    <button type="button" class="tab-button" data-target="id-mrxgghpc-4a3l6p">
+      地鐵站內配置圖
+    </button></nav>
+  </header>
+
+  <main class="content">
+    <section id="id-mrpv6pw2-w8jv9q" class="gallery-section active">
+      <h2 class="section-title">小黃卡(入境卡)</h2>
+      <div class="gallery-grid">
+        
+      <figure class="image-card">
+        <img class="gallery-image"
+             src="huang_card.jpg"
+             data-full="huang_card.jpg"
+             alt="ARRIVAL CARD"
+             loading="lazy">
+        <figcaption class="image-caption">
+          <strong>ARRIVAL CARD</strong>
+          
+        </figcaption>
+      </figure>
+      </div>
+    </section>
+    <section id="id-mrpv6pw2-4upe09" class="gallery-section">
+      <h2 class="section-title">市區(內)退稅</h2>
+      <div class="gallery-grid">
+        
+      <figure class="image-card">
+        <img class="gallery-image"
+             src="TaxRefund-1.jpg"
+             data-full="TaxRefund-1.jpg"
+             alt="TaxRefund-1"
+             loading="lazy">
+        <figcaption class="image-caption">
+          <strong>TaxRefund-1</strong>
+          
+        </figcaption>
+      </figure>
+      </div>
+    </section>
+    <section id="id-mrpvd5mq-gx4qjz" class="gallery-section">
+      <h2 class="section-title">飯店資訊</h2>
+      <div class="gallery-grid">
+        
+      <figure class="image-card">
+        <img class="gallery-image"
+             src="hotel1.jpg"
+             data-full="hotel1.jpg"
+             alt="樓層資訊"
+             loading="lazy">
+        <figcaption class="image-caption">
+          <strong>樓層資訊</strong>
+          <div class="image-note">1F:星巴克。
+2F:健身中心。
+3F:接待大廳。
+4F~24F:客房</div>
+        </figcaption>
+      </figure>
+      </div>
+    </section>
+    <section id="id-mrxgghpc-4a3l6p" class="gallery-section">
+      <h2 class="section-title">地鐵站內配置圖</h2>
+      <div class="gallery-grid">
+        
+      <figure class="image-card">
+        <img class="gallery-image"
+             src="131_Jonggak_鐘閣.jpg"
+             data-full="131_Jonggak_鐘閣.jpg"
+             alt="131_Jonggak_鐘閣"
+             loading="lazy">
+        <figcaption class="image-caption">
+          <strong>131_Jonggak_鐘閣</strong>
+          
+        </figcaption>
+      </figure>
+      <figure class="image-card">
+        <img class="gallery-image"
+             src="239_Hongik_弘益大學.jpg"
+             data-full="239_Hongik_弘益大學.jpg"
+             alt="239_Hongik_弘益大學"
+             loading="lazy">
+        <figcaption class="image-caption">
+          <strong>239_Hongik_弘益大學</strong>
+          
+        </figcaption>
+      </figure>
+      <figure class="image-card">
+        <img class="gallery-image"
+             src="328_Anguk_安國.jpg"
+             data-full="328_Anguk_安國.jpg"
+             alt="328_Anguk_安國"
+             loading="lazy">
+        <figcaption class="image-caption">
+          <strong>328_Anguk_安國</strong>
+          
+        </figcaption>
+      </figure>
+      <figure class="image-card">
+        <img class="gallery-image"
+             src="420_Hyehwa_惠化.jpg"
+             data-full="420_Hyehwa_惠化.jpg"
+             alt="420_Hyehwa_惠化"
+             loading="lazy">
+        <figcaption class="image-caption">
+          <strong>420_Hyehwa_惠化</strong>
+          
+        </figcaption>
+      </figure>
+      <figure class="image-card">
+        <img class="gallery-image"
+             src="421_Dongdaemun_東大門.jpg"
+             data-full="421_Dongdaemun_東大門.jpg"
+             alt="421_Dongdaemun_東大門"
+             loading="lazy">
+        <figcaption class="image-caption">
+          <strong>421_Dongdaemun_東大門</strong>
+          
+        </figcaption>
+      </figure>
+      <figure class="image-card">
+        <img class="gallery-image"
+             src="528_mapo_麻浦.jpg"
+             data-full="528_mapo_麻浦.jpg"
+             alt="528_mapo_麻浦"
+             loading="lazy">
+        <figcaption class="image-caption">
+          <strong>528_mapo_麻浦</strong>
+          
+        </figcaption>
+      </figure>
+      <figure class="image-card">
+        <img class="gallery-image"
+             src="529_Gongdeok_孔德.jpg"
+             data-full="529_Gongdeok_孔德.jpg"
+             alt="529_Gongdeok_孔德"
+             loading="lazy">
+        <figcaption class="image-caption">
+          <strong>529_Gongdeok_孔德</strong>
+          
+        </figcaption>
+      </figure>
+      <figure class="image-card">
+        <img class="gallery-image"
+             src="534_Jongno3(sam)-ga_鐘路三街.jpg"
+             data-full="534_Jongno3(sam)-ga_鐘路三街.jpg"
+             alt="534_Jongno3(sam)-ga_鐘路三街"
+             loading="lazy">
+        <figcaption class="image-caption">
+          <strong>534_Jongno3(sam)-ga_鐘路三街</strong>
+          
+        </figcaption>
+      </figure>
+      <figure class="image-card">
+        <img class="gallery-image"
+             src="536_DongdaemunHistory CulturePark_東大門歷史文化公園.jpg"
+             data-full="536_DongdaemunHistory CulturePark_東大門歷史文化公園.jpg"
+             alt="536_DongdaemunHistory CulturePark_東大門歷史文化公園"
+             loading="lazy">
+        <figcaption class="image-caption">
+          <strong>536_DongdaemunHistory CulturePark_東大門歷史文化公園</strong>
+          
+        </figcaption>
+      </figure>
+      </div>
+    </section></main>
+
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="圖片放大檢視">
+    <div class="lightbox-toolbar">
+      <div id="lightboxTitle" class="lightbox-title"></div>
+      <button id="closeLightbox" class="close-button" type="button" aria-label="關閉">×</button>
+    </div>
+    <div id="lightboxStage" class="lightbox-stage">
+      <img id="lightboxImage" class="lightbox-image" src="" alt="">
+    </div>
+  </div>
+
+  <script>
+  "use strict";
+  const tabButtons=document.querySelectorAll(".tab-button");
+  const gallerySections=document.querySelectorAll(".gallery-section");
+  tabButtons.forEach(button=>{
+    button.addEventListener("click",()=>{
+      const target=document.getElementById(button.dataset.target);
+      if(!target)return;
+      tabButtons.forEach(x=>x.classList.remove("active"));
+      gallerySections.forEach(x=>x.classList.remove("active"));
+      button.classList.add("active");
+      target.classList.add("active");
+      window.scrollTo({top:0,behavior:"smooth"});
+    });
+  });
+
+  const lightbox=document.getElementById("lightbox");
+  const lightboxImage=document.getElementById("lightboxImage");
+  const lightboxTitle=document.getElementById("lightboxTitle");
+  const closeBtn=document.getElementById("closeLightbox");
+  const stage=document.getElementById("lightboxStage");
+
+  function openLightbox(img){
+    lightboxImage.src=img.dataset.full||img.src;
+    lightboxImage.alt=img.alt||"圖片";
+    lightboxTitle.textContent=img.alt||"圖片";
+    lightbox.classList.add("open");
+    document.body.classList.add("lightbox-open");
+  }
+  function closeLightbox(){
+    lightbox.classList.remove("open");
+    document.body.classList.remove("lightbox-open");
+    lightboxImage.src="";
+  }
+  document.querySelectorAll(".gallery-image").forEach(img=>img.addEventListener("click",()=>openLightbox(img)));
+  closeBtn.addEventListener("click",closeLightbox);
+  lightbox.addEventListener("click",e=>{if(e.target===lightbox||e.target===stage)closeLightbox()});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLightbox()});
+  </script>
+</body>
+</html>
