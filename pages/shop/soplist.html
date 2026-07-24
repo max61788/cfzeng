@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>購物清單</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#1f2937;--muted:#6b7280;--line:#e2e8f0;--primary:#2563eb}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text)}
+header{background:linear-gradient(135deg,#1d4ed8,#4f46e5);color:#fff;padding:34px 18px}
+.head{max-width:1180px;margin:auto}
+h1{margin:0 0 8px;font-size:clamp(26px,5vw,42px)}
+.sub{opacity:.9;font-size:15px}
+.tools{max-width:1180px;margin:18px auto 0;padding:0 18px;display:flex;gap:10px;flex-wrap:wrap}
+input,select{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;font:inherit}
+#search{flex:1;min-width:220px}
+main{max-width:1180px;margin:18px auto 40px;padding:0 18px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 24px rgba(15,23,42,.06);display:flex;flex-direction:column}
+.image-wrap{aspect-ratio:4/3;background:#eef2f7;overflow:hidden}
+.image-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.noimg{height:100%;display:grid;place-items:center;color:var(--muted)}
+.content{padding:16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.tag{align-self:flex-start;background:#eef2ff;color:#3730a3;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:700}
+h2{font-size:20px;margin:0}
+.desc{white-space:pre-wrap;color:#4b5563;line-height:1.65;font-size:14px;flex:1}
+.link{display:block;text-align:center;text-decoration:none;background:var(--primary);color:#fff;border-radius:11px;padding:11px 14px;font-weight:700}
+.link:hover{filter:brightness(.94)}
+.empty{text-align:center;color:var(--muted);padding:60px 20px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:9999;display:none;overflow:hidden;touch-action:none}
+.viewer.open{display:block}
+.viewer-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
+.viewer img{max-width:92vw;max-height:88vh;object-fit:contain;user-select:none;-webkit-user-drag:none;transform-origin:center center;will-change:transform}
+.viewer-close,.viewer-reset{position:absolute;z-index:2;border:0;border-radius:999px;background:rgba(255,255,255,.9);color:#111827;font:700 16px/1 sans-serif;padding:12px 14px;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+.viewer-close{top:14px;right:14px}
+.viewer-reset{bottom:18px;left:50%;transform:translateX(-50%);font-size:14px}
+.image-wrap{cursor:zoom-in}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){header{padding:26px 14px}.tools,main{padding-left:12px;padding-right:12px}.grid{grid-template-columns:1fr}.card{border-radius:14px}}
+</style>
+</head>
+<body>
+<header><div class="head"><h1>購物清單</h1><div class="sub"></div></div></header>
+<div class="tools">
+  <input id="search" placeholder="搜尋商品名稱、分類或敘述">
+  <select id="category"><option value="">全部分類</option></select>
+</div>
+<main><div id="grid" class="grid"></div><div id="empty" class="empty" hidden>找不到符合條件的商品。</div></main>
+<div id="viewer" class="viewer" aria-hidden="true">
+  <button id="viewerClose" class="viewer-close" aria-label="關閉">✕</button>
+  <div id="viewerStage" class="viewer-stage"><img id="viewerImage" alt=""></div>
+  <button id="viewerReset" class="viewer-reset">還原大小</button>
+</div>
+<footer>本頁為個人購物參考清單</footer>
+<script>
+const items=[{"id":"mryvxwy0fxrqa","name":"Nike Vomero 5","category":"鞋子","description":"尺寸:\nUS9.5\nKR275(mm)","url":"https://www.nike.com/kr/t/%EB%82%98%EC%9D%B4%ED%82%A4-%EC%A4%8C-%EB%B3%B4%EB%A9%94%EB%A1%9C-5-%EB%82%A8%EC%84%B1-%EC%8B%A0%EB%B0%9C-U3pM9V3c/FB9149-009","image":"nike.jpg"}];
+const esc=v=>String(v||'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+const grid=document.getElementById('grid'),empty=document.getElementById('empty'),search=document.getElementById('search'),category=document.getElementById('category');
+[...new Set(items.map(x=>x.category).filter(Boolean))].sort().forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;category.appendChild(o)});
+function render(){
+ const q=search.value.trim().toLowerCase(),cat=category.value;
+ const list=items.filter(x=>(!cat||x.category===cat)&&[x.name,x.category,x.description].join(' ').toLowerCase().includes(q));
+ grid.innerHTML=list.map(x=>`<article class="card">
+   <div class="image-wrap" ${x.image?`data-full="${esc(x.image)}" title="點擊放大圖片"`:''}>${x.image?`<img src="${esc(x.image)}" alt="${esc(x.name)}">`:'<div class="noimg">無照片</div>'}</div>
+   <div class="content">
+     ${x.category?`<span class="tag">${esc(x.category)}</span>`:''}
+     <h2>${esc(x.name)}</h2>
+     <div class="desc">${esc(x.description)}</div>
+     ${x.url?`<a class="link" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">開啟參考網址</a>`:''}
+   </div>
+ </article>`).join('');
+ empty.hidden=!!list.length;
+}
+search.addEventListener('input',render);category.addEventListener('change',render);render();
+
+const viewer=document.getElementById('viewer');
+const viewerImage=document.getElementById('viewerImage');
+const viewerStage=document.getElementById('viewerStage');
+let scale=1,tx=0,ty=0,startX=0,startY=0,startTx=0,startTy=0,startDist=0,startScale=1,dragging=false,lastTap=0;
+function applyTransform(){viewerImage.style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')';}
+function resetViewer(){scale=1;tx=0;ty=0;applyTransform();}
+function openViewer(src,alt){viewerImage.src=src;viewerImage.alt=alt||'';viewer.classList.add('open');viewer.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';resetViewer();}
+function closeViewer(){viewer.classList.remove('open');viewer.setAttribute('aria-hidden','true');document.body.style.overflow='';viewerImage.removeAttribute('src');resetViewer();}
+document.getElementById('grid').addEventListener('click',e=>{const wrap=e.target.closest('.image-wrap[data-full]');if(wrap)openViewer(wrap.dataset.full,wrap.querySelector('img')?.alt||'');});
+document.getElementById('viewerClose').addEventListener('click',closeViewer);
+document.getElementById('viewerReset').addEventListener('click',resetViewer);
+viewer.addEventListener('click',e=>{if(e.target===viewer)closeViewer();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeViewer();});
+viewerStage.addEventListener('wheel',e=>{e.preventDefault();scale=Math.min(5,Math.max(1,scale*(e.deltaY<0?1.12:.89)));if(scale===1){tx=0;ty=0;}applyTransform();},{passive:false});
+viewerStage.addEventListener('pointerdown',e=>{viewerStage.setPointerCapture(e.pointerId);dragging=true;startX=e.clientX;startY=e.clientY;startTx=tx;startTy=ty;});
+viewerStage.addEventListener('pointermove',e=>{if(!dragging||scale<=1)return;tx=startTx+(e.clientX-startX);ty=startTy+(e.clientY-startY);applyTransform();});
+viewerStage.addEventListener('pointerup',()=>dragging=false);viewerStage.addEventListener('pointercancel',()=>dragging=false);
+viewerStage.addEventListener('touchstart',e=>{if(e.touches.length===2){startDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);startScale=scale;}else if(e.touches.length===1){const now=Date.now();if(now-lastTap<300){scale=scale>1?1:2;tx=0;ty=0;applyTransform();}lastTap=now;}},{passive:false});
+viewerStage.addEventListener('touchmove',e=>{if(e.touches.length===2){e.preventDefault();const dist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);scale=Math.min(5,Math.max(1,startScale*(dist/startDist)));if(scale===1){tx=0;ty=0;}applyTransform();}},{passive:false});
+</script>
+</body>
+</html>
