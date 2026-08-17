@@ -109,15 +109,47 @@
       iframe{border:0;box-shadow:none;height:100vh}
     }
   </style>
+
+.online-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  font-family: -apple-system, BlinkMacSystemFont,
+               "Segoe UI", "Microsoft JhengHei",
+               "Noto Sans TC", sans-serif;
+
+  font-size: 14px;
+  font-weight: 500;
+  color: #607784;
+}
+
+.online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #41c98a;
+}
+
+#online-number {
+  font-weight: 700;
+  color: #2d8fe3;
+}
+	
 </head>
 <body>
 <div class="app">
   <header>
     <div class="bar">
       <p class="title">首爾旅遊筆記</p>
-<div id="online-count">
-  🟢 目前線上：<span id="online-number">0</span> 人
+		
+<div id="online-count" class="online-status">
+  <span class="online-dot"></span>
+  <span>目前線上</span>
+  <span id="online-number">0</span>
+  <span>人</span>
 </div>
+</br>
       <nav class="tabs" aria-label="功能切換">
         <button class="tab active" data-page="pages/行程表.html?v=20260724-0">行程表</button>
 		<button class="tab" data-page="pages/seoul_metro.html">首爾地鐵MAP</button>
