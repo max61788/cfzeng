@@ -777,6 +777,7 @@ async function loadTraffic() {
 
 // ============================================================
 // 排程狀態
+// 畫面編號採目前列表 1、2、3...；D1 真實 id 僅供修改/刪除使用
 // ============================================================
 
 function scheduleStatus(status) {
@@ -791,7 +792,14 @@ function scheduleStatus(status) {
   return `<span class="badge ${item[1]}">${item[0]}</span>`;
 }
 
-function scheduleCard(schedule) {
+function getScheduleDisplayNumber(id) {
+  const index = cachedSchedules.findIndex(
+    item => Number(item.id) === Number(id)
+  );
+  return index >= 0 ? index + 1 : id;
+}
+
+function scheduleCard(schedule, displayNumber) {
   const canEdit = schedule.status === "pending" || schedule.status === "error";
   const canDelete = schedule.status !== "running";
 
@@ -799,7 +807,7 @@ function scheduleCard(schedule) {
     <div class="schedule-card" id="schedule-${schedule.id}">
       <div class="schedule-top">
         <div>
-          <div class="schedule-id">排程 ${schedule.id}</div>
+          <div class="schedule-id">排程 ${displayNumber}</div>
           <div class="schedule-time">
             📅 ${formatDateMinute(schedule.scheduled_at_taiwan)}
           </div>
@@ -862,7 +870,7 @@ async function loadSchedules() {
       return;
     }
 
-    list.innerHTML = cachedSchedules.map(scheduleCard).join("");
+    list.innerHTML = cachedSchedules.map((schedule, index) => scheduleCard(schedule, index + 1)).join("");
 
   } catch (error) {
     list.innerHTML = `
@@ -967,26 +975,33 @@ async function saveSchedule() {
     if (editingScheduleId == null) {
       const data = await postSchedule(value);
 
+      input.value = taiwanInputValue(5);
+      await loadSchedules();
+
+      const displayNumber = getScheduleDisplayNumber(data.id);
+
       message.innerHTML = `
         <div class="notice">
-          ✅ 已新增排程 ${data.id}：${formatDateMinute(data.scheduled_at_taiwan)}
+          ✅ 已新增排程 ${displayNumber}：${formatDateMinute(data.scheduled_at_taiwan)}
         </div>
       `;
     } else {
       const id = editingScheduleId;
+      const oldDisplayNumber = getScheduleDisplayNumber(id);
       const data = await putSchedule(id, value);
+
+      cancelEditSchedule(false);
+      input.value = taiwanInputValue(5);
+      await loadSchedules();
+
+      const displayNumber = getScheduleDisplayNumber(id) || oldDisplayNumber;
 
       message.innerHTML = `
         <div class="notice">
-          ✅ 排程 ${id} 已修改為 ${formatDateMinute(data.scheduled_at_taiwan)}。
+          ✅ 排程 ${displayNumber} 已修改為 ${formatDateMinute(data.scheduled_at_taiwan)}。
         </div>
       `;
-
-      cancelEditSchedule(false);
     }
-
-    input.value = taiwanInputValue(5);
-    await loadSchedules();
 
   } catch (error) {
     message.innerHTML = `
@@ -1017,8 +1032,10 @@ function editSchedule(id) {
   document.getElementById("scheduleDateTime").value =
     toDateTimeLocalValue(schedule.scheduled_at_taiwan);
 
+  const displayNumber = getScheduleDisplayNumber(id);
+
   document.getElementById("scheduleTitle").innerText =
-    `✏️ 修改排程 ${id}`;
+    `✏️ 修改排程 ${displayNumber}`;
 
   document.getElementById("saveScheduleButton").innerText =
     "💾 儲存修改";
@@ -1064,8 +1081,10 @@ async function deleteSchedule(id) {
     return;
   }
 
+  const displayNumber = getScheduleDisplayNumber(id);
+
   const ok = confirm(
-    `確定要刪除排程 ${id}？\n${formatDateMinute(schedule.scheduled_at_taiwan)}`
+    `確定要刪除排程 ${displayNumber}？\n${formatDateMinute(schedule.scheduled_at_taiwan)}`
   );
 
   if (!ok) return;
@@ -1243,11 +1262,11 @@ async function fetchHistory(url) {
 
     const scheduleMap = {};
 
-    for (const schedule of schedules) {
+    schedules.forEach((schedule, index) => {
       if (schedule.traffic_log_id != null) {
-        scheduleMap[schedule.traffic_log_id] = schedule.id;
+        scheduleMap[schedule.traffic_log_id] = index + 1;
       }
-    }
+    });
 
     if (items.length === 0) {
       list.innerHTML = `
