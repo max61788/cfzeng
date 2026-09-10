@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>新竹 → 南港 即時路況</title>
 
   <style>
+    * { box-sizing: border-box; }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
                    "Microsoft JhengHei", Arial, sans-serif;
@@ -33,30 +34,72 @@
       margin-bottom: 20px;
     }
 
+    .query-button,
+    .primary-button,
+    .secondary-button,
+    .danger-button,
+    .small-button {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
     .query-button {
       width: 100%;
-      border: 0;
       border-radius: 12px;
       padding: 15px;
       font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
       background: #1976d2;
       color: white;
       margin-bottom: 18px;
     }
 
-    .query-button:disabled {
+    .query-button:disabled,
+    button:disabled {
       opacity: 0.6;
       cursor: wait;
     }
 
-    .status {
+    .primary-button {
+      background: #1976d2;
+      color: white;
+    }
+
+    .secondary-button {
+      background: #eceff1;
+      color: #263238;
+    }
+
+    .danger-button {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .small-button {
+      padding: 8px 11px;
+      font-size: 14px;
+    }
+
+    .status,
+    .panel,
+    .route,
+    .summary,
+    .schedule-card,
+    .history-card {
       background: white;
-      border-radius: 12px;
-      padding: 14px 16px;
+      border-radius: 14px;
+      padding: 18px;
       margin-bottom: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    }
+
+    .panel-title {
+      font-size: 21px;
+      font-weight: bold;
+      margin-bottom: 14px;
     }
 
     .fresh {
@@ -69,15 +112,17 @@
       font-weight: bold;
     }
 
-    .route {
-      background: white;
-      border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    .notice {
+      color: #6d4c41;
+      background: #fff8e1;
+      padding: 10px 12px;
+      border-radius: 9px;
+      margin-top: 10px;
+      line-height: 1.6;
     }
 
-    .route h2 {
+    .route h2,
+    .summary h2 {
       margin-top: 0;
       margin-bottom: 10px;
       font-size: 20px;
@@ -131,18 +176,6 @@
       font-weight: bold;
     }
 
-    .summary {
-      background: white;
-      border-radius: 14px;
-      padding: 18px;
-      margin-top: 15px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-
-    .summary h2 {
-      margin-top: 0;
-    }
-
     .yes {
       color: #16833b;
       font-weight: bold;
@@ -175,36 +208,166 @@
       line-height: 1.6;
     }
 
+    .section-divider {
+      margin: 28px 0 18px;
+      border: 0;
+      border-top: 1px solid #ddd;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input[type="datetime-local"],
+    input[type="date"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 9px;
+      font-size: 16px;
+      background: white;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .schedule-top,
+    .history-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .schedule-id {
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .schedule-time,
+    .history-time {
+      margin-top: 8px;
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .muted {
+      color: #777;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .badge-pending {
+      background: #fff8e1;
+      color: #8d6e00;
+    }
+
+    .badge-running {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .badge-completed {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .badge-error {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .empty {
+      text-align: center;
+      color: #777;
+      padding: 20px 10px;
+    }
+
+    .history-route-name {
+      font-weight: bold;
+      line-height: 1.5;
+      margin: 12px 0 8px;
+    }
+
+    .history-big-time {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .history-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .history-summary-box {
+      background: #f7f7f7;
+      border-radius: 9px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .history-summary-box .value {
+      font-size: 19px;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+
+    .history-alt {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #eee;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .editing {
+      border: 2px solid #1976d2;
+    }
+
     @media (max-width: 520px) {
-      body {
-        padding: 12px;
-      }
-
-      h1 {
-        font-size: 23px;
-      }
-
-      .big-time {
-        font-size: 29px;
-      }
-
-      .info-grid {
-        grid-template-columns: 1fr 1fr;
-      }
+      body { padding: 12px; }
+      h1 { font-size: 23px; }
+      .big-time { font-size: 29px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .history-summary-grid { grid-template-columns: 1fr; }
+      .schedule-top,
+      .history-top { flex-direction: column; }
     }
   </style>
 </head>
 
-
 <body>
-
 <div class="container">
 
   <h1>🚗 新竹 → 南港</h1>
-
-  <div class="subtitle">
-    即時路況與預估行車時間
-  </div>
+  <div class="subtitle">即時路況、排程管理與歷史紀錄</div>
 
   <button
     id="queryButton"
@@ -214,18 +377,90 @@
   </button>
 
   <div id="result">
-    <div class="status">
-      按「查詢目前路況」取得最新資料
+    <div class="status">按「查詢目前路況」取得最新資料</div>
+  </div>
+
+  <hr class="section-divider">
+
+  <div class="panel" id="schedulePanel">
+    <div class="panel-title" id="scheduleTitle">🗓️ 新增路況記錄排程</div>
+
+    <div class="form-grid">
+      <div>
+        <label for="scheduleDateTime">年月日、時、分</label>
+        <input type="datetime-local" id="scheduleDateTime" step="60">
+      </div>
+
+      <button
+        id="saveScheduleButton"
+        class="primary-button"
+        onclick="saveSchedule()">
+        ＋ 新增排程
+      </button>
+    </div>
+
+    <div class="button-row">
+      <button
+        id="cancelEditButton"
+        class="secondary-button small-button"
+        onclick="cancelEditSchedule()"
+        style="display:none;">
+        取消修改
+      </button>
+
+      <button
+        class="secondary-button small-button"
+        onclick="loadSchedules()">
+        🔄 重新整理排程
+      </button>
+    </div>
+
+    <div id="scheduleMessage"></div>
+  </div>
+
+  <div id="scheduleList"></div>
+
+  <hr class="section-divider">
+
+  <div class="panel">
+    <div class="panel-title">📚 歷史路況紀錄</div>
+
+    <div class="form-grid">
+      <div>
+        <label for="historyDate">查詢日期</label>
+        <input type="date" id="historyDate">
+      </div>
+
+      <button
+        class="primary-button"
+        onclick="loadHistoryByDate()">
+        查詢這一天
+      </button>
+    </div>
+
+    <div class="button-row">
+      <button
+        class="secondary-button small-button"
+        onclick="loadRecentHistory()">
+        最近 50 筆
+      </button>
+
+      <button
+        class="danger-button small-button"
+        onclick="deleteHistoryByDate()">
+        🗑️ 刪除這一天全部紀錄
+      </button>
     </div>
   </div>
 
+  <div id="historySummary"></div>
+  <div id="historyList"></div>
+
 </div>
 
-
 <script>
-
 const WORKER_URL =
-  "https://map-eta.ssss912042.workers.dev/";
+  "https://map-eta.ssss912042.workers.dev";
 
 const FROM =
   "24.816180,120.966055";
@@ -233,17 +468,16 @@ const FROM =
 const TO =
   "25.057046,121.619954";
 
+let editingScheduleId = null;
+let cachedSchedules = [];
+
 
 // ============================================================
-// 日期 + 時間
-// 例如：2026/09/10 16:07:53
+// 日期時間工具
 // ============================================================
 
 function formatDateTime(timeString) {
-
-  if (!timeString) {
-    return "--";
-  }
+  if (!timeString) return "--";
 
   const d = new Date(timeString);
 
@@ -251,31 +485,47 @@ function formatDateTime(timeString) {
     "zh-TW",
     {
       timeZone: "Asia/Taipei",
-
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
-
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
-
       hour12: false
     }
   );
 }
 
+function formatDateMinute(timeString) {
+  if (!timeString) return "--";
 
-// ============================================================
-// 只顯示時間
-// 例如：17:23
-// ============================================================
+  const d = new Date(timeString);
+
+  const date = d.toLocaleDateString(
+    "zh-TW",
+    {
+      timeZone: "Asia/Taipei",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }
+  );
+
+  const time = d.toLocaleTimeString(
+    "zh-TW",
+    {
+      timeZone: "Asia/Taipei",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    }
+  );
+
+  return `${date} ${time}`;
+}
 
 function formatTime(timeString) {
-
-  if (!timeString) {
-    return "--";
-  }
+  if (!timeString) return "--";
 
   const d = new Date(timeString);
 
@@ -283,469 +533,857 @@ function formatTime(timeString) {
     "zh-TW",
     {
       timeZone: "Asia/Taipei",
-
       hour: "2-digit",
       minute: "2-digit",
-
       hour12: false
     }
   );
 }
 
-
-// ============================================================
-// 計算資料距離現在幾秒
-// ============================================================
-
 function getAgeSeconds(timeString) {
+  if (!timeString) return 999999;
 
-  if (!timeString) {
-    return 999999;
+  const dataTime = new Date(timeString).getTime();
+  return Math.abs(Date.now() - dataTime) / 1000;
+}
+
+function taiwanInputValue(offsetMinutes = 0) {
+  const d = new Date(Date.now() + offsetMinutes * 60000);
+
+  const parts = new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      timeZone: "Asia/Taipei",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23"
+    }
+  ).formatToParts(d);
+
+  const obj = {};
+
+  for (const part of parts) {
+    if (part.type !== "literal") {
+      obj[part.type] = part.value;
+    }
   }
 
-  const dataTime =
-    new Date(timeString).getTime();
+  return `${obj.year}-${obj.month}-${obj.day}T${obj.hour}:${obj.minute}`;
+}
 
-  const now =
-    Date.now();
+function todayTaiwan() {
+  return taiwanInputValue(0).slice(0, 10);
+}
 
-  return Math.abs(
-    now - dataTime
-  ) / 1000;
+function toDateTimeLocalValue(timeString) {
+  if (!timeString) return "";
+  return timeString.slice(0, 16);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 
 // ============================================================
-// 建立路線卡片
+// 即時路況卡片
 // ============================================================
 
-function routeCard(
-  route,
-  medal,
-  title,
-  fastest = false
-) {
-
-  if (!route) {
-    return "";
-  }
+function routeCard(route, medal, title, fastest = false) {
+  if (!route) return "";
 
   let difference = "";
 
-  if (
-    !fastest &&
-    route.slower_by_minutes != null
-  ) {
-
+  if (!fastest && route.slower_by_minutes != null) {
     difference = `
       <div class="difference">
-        ⏱ 比最快路線慢
-        ${route.slower_by_minutes} 分鐘
+        ⏱ 比最快路線慢 ${route.slower_by_minutes} 分鐘
       </div>
     `;
   }
-
 
   let roadsText = "";
 
-  if (
-    route.roads &&
-    route.roads.length > 0
-  ) {
-
+  if (route.roads && route.roads.length > 0) {
     roadsText = `
       <div class="roads">
-        經過：
-        ${route.roads.join(" → ")}
+        經過：${route.roads.map(escapeHtml).join(" → ")}
       </div>
     `;
   }
 
-
   return `
-
     <div class="route">
-
-      <h2>
-        ${medal} ${title}
-      </h2>
+      <h2>${medal} ${title}</h2>
 
       <div class="route-name">
-        ${route.label}
+        ${escapeHtml(route.label)}
       </div>
-
 
       <div class="big-time">
-        ${route.travel_minutes} 分鐘
+        ${route.travel_minutes ?? "--"} 分鐘
       </div>
-
 
       <div class="arrival">
-        預計抵達：
-        ${formatTime(route.arrival_time)}
+        預計抵達：${formatTime(route.arrival_time)}
       </div>
-
 
       <div class="info-grid">
-
         <div class="info-box">
-
-          <div class="info-title">
-            距離
-          </div>
-
-          <div class="info-value">
-            ${route.distance_km} 公里
-          </div>
-
+          <div class="info-title">距離</div>
+          <div class="info-value">${route.distance_km ?? "--"} 公里</div>
         </div>
 
-
         <div class="info-box">
-
-          <div class="info-title">
-            無車流時間
-          </div>
-
-          <div class="info-value">
-            ${route.no_traffic_minutes ?? "--"} 分鐘
-          </div>
-
+          <div class="info-title">無車流時間</div>
+          <div class="info-value">${route.no_traffic_minutes ?? "--"} 分鐘</div>
         </div>
 
-
         <div class="info-box">
-
-          <div class="info-title">
-            目前交通影響
-          </div>
-
-          <div class="info-value">
-            +${route.traffic_effect_minutes ?? "--"} 分鐘
-          </div>
-
+          <div class="info-title">目前交通影響</div>
+          <div class="info-value">+${route.traffic_effect_minutes ?? "--"} 分鐘</div>
         </div>
 
-
         <div class="info-box">
-
-          <div class="info-title">
-            歷史同時段
-          </div>
-
-          <div class="info-value">
-            ${route.historic_traffic_minutes ?? "--"} 分鐘
-          </div>
-
+          <div class="info-title">歷史同時段</div>
+          <div class="info-value">${route.historic_traffic_minutes ?? "--"} 分鐘</div>
         </div>
-
       </div>
 
-
       ${difference}
-
       ${roadsText}
-
     </div>
-
   `;
 }
 
 
 // ============================================================
-// 查詢路況
+// 查詢即時路況
 // ============================================================
 
 async function loadTraffic() {
-
-  const result =
-    document.getElementById(
-      "result"
-    );
-
-  const button =
-    document.getElementById(
-      "queryButton"
-    );
-
+  const result = document.getElementById("result");
+  const button = document.getElementById("queryButton");
 
   button.disabled = true;
-
-  button.innerText =
-    "⏳ 正在查詢最新路況...";
-
+  button.innerText = "⏳ 正在查詢最新路況...";
 
   result.innerHTML = `
-    <div class="status loading">
-      正在取得最新路況...
-    </div>
+    <div class="status loading">正在取得最新路況...</div>
   `;
 
-
-  // ==========================================================
-  // 每次都產生新的時間戳
-  // ==========================================================
-
-  const nocache =
-    Date.now();
-
+  const nocache = Date.now();
 
   const url =
     WORKER_URL +
-    "?from=" +
-    encodeURIComponent(FROM) +
-    "&to=" +
-    encodeURIComponent(TO) +
-    "&nocache=" +
-    nocache;
-
+    "/?from=" + encodeURIComponent(FROM) +
+    "&to=" + encodeURIComponent(TO) +
+    "&nocache=" + nocache;
 
   try {
-
-    // ========================================================
-    // 呼叫 Cloudflare Worker
-    // ========================================================
-
-    const response =
-      await fetch(
-        url,
-        {
-          method: "GET",
-          cache: "no-store"
-        }
-      );
-
+    const response = await fetch(
+      url,
+      {
+        method: "GET",
+        cache: "no-store"
+      }
+    );
 
     if (!response.ok) {
-
-      throw new Error(
-        "Worker 回傳錯誤：" +
-        response.status
-      );
-
+      throw new Error("Worker 回傳錯誤：" + response.status);
     }
 
-
-    const data =
-      await response.json();
-
+    const data = await response.json();
 
     if (!data.success) {
+      throw new Error(data.error || "路況查詢失敗");
+    }
 
+    const generatedAge = getAgeSeconds(data.generated_at_taiwan);
+    const departureAge = getAgeSeconds(data.fastest?.departure_time);
+
+    if (generatedAge > 10 || departureAge > 10) {
       throw new Error(
-        data.error ||
-        "路況查詢失敗"
+        "取得的資料不是最新資料。資料時間與現在相差超過 10 秒，請重新查詢。"
       );
-
     }
 
+    const fastest = data.fastest;
+    const second = data.second_fastest;
+    const third = data.third_fastest;
 
-    // ========================================================
-    // 檢查資料新鮮度
-    // ========================================================
-
-    const generatedAge =
-      getAgeSeconds(
-        data.generated_at_taiwan
-      );
-
-
-    const departureAge =
-      getAgeSeconds(
-        data.fastest?.departure_time
-      );
-
-
-    if (
-      generatedAge > 10 ||
-      departureAge > 10
-    ) {
-
-      throw new Error(
-        "取得的資料不是最新資料。" +
-        "資料時間與現在相差超過 10 秒，請重新查詢。"
-      );
-
-    }
-
-
-    // ========================================================
-    // 取得三條路線
-    // ========================================================
-
-    const fastest =
-      data.fastest;
-
-    const second =
-      data.second_fastest;
-
-    const third =
-      data.third_fastest;
-
-
-    // ========================================================
-    // 60分鐘判斷
-    // ========================================================
-
-    let under60Html = "";
-
-    if (
-      data.under_60_minutes
-    ) {
-
-      under60Html = `
-        <span class="yes">
-          ✅ 有機會
-        </span>
-      `;
-
-    } else {
-
-      under60Html = `
-        <span class="no">
-          ❌ 目前不行
-        </span>
-      `;
-
-    }
-
-
-    // ========================================================
-    // 建議文字
-    // ========================================================
+    const under60Html = data.under_60_minutes
+      ? `<span class="yes">✅ 有機會</span>`
+      : `<span class="no">❌ 目前不行</span>`;
 
     let recommendation = "";
 
-    if (
-      fastest &&
-      second
-    ) {
-
+    if (fastest && second) {
       recommendation = `
-        現在建議走
-        「${fastest.label}」，
+        現在建議走「${escapeHtml(fastest.label)}」，
         約 ${fastest.travel_minutes} 分鐘，
         預計 ${formatTime(fastest.arrival_time)} 抵達。
       `;
 
-
-      if (
-        second.slower_by_minutes <= 5
-      ) {
-
+      if (second.slower_by_minutes <= 5) {
         recommendation += `
-          第二條路線只慢
-          ${second.slower_by_minutes} 分鐘，
-          可作為備用路線。
+          第二條路線只慢 ${second.slower_by_minutes} 分鐘，可作為備用路線。
         `;
-
       }
-
     }
 
-
-    // ========================================================
-    // 顯示
-    // ========================================================
-
     result.innerHTML = `
-
       <div class="status">
-
         🕒 資料時間：
-        <strong>
-          ${formatDateTime(
-            data.generated_at_taiwan
-          )}
-        </strong>
-
+        <strong>${formatDateTime(data.generated_at_taiwan)}</strong>
         <br><br>
-
-        <span class="fresh">
-          ● 即時資料
-        </span>
-
+        <span class="fresh">● 即時資料</span>
         （約 ${Math.round(generatedAge)} 秒前）
-
       </div>
 
-
-      ${routeCard(
-        fastest,
-        "🥇",
-        "最快路線",
-        true
-      )}
-
-
-      ${routeCard(
-        second,
-        "🥈",
-        "第二快",
-        false
-      )}
-
-
-      ${routeCard(
-        third,
-        "🥉",
-        "第三快",
-        false
-      )}
-
+      ${routeCard(fastest, "🥇", "最快路線", true)}
+      ${routeCard(second, "🥈", "第二快", false)}
+      ${routeCard(third, "🥉", "第三快", false)}
 
       <div class="summary">
-
-        <h2>
-          📊 路況結論
-        </h2>
-
-
-        <p>
-          60 分鐘內抵達：
-          ${under60Html}
-        </p>
-
-
-        <div class="recommend">
-          ${recommendation}
-        </div>
-
+        <h2>📊 路況結論</h2>
+        <p>60 分鐘內抵達：${under60Html}</p>
+        <div class="recommend">${recommendation}</div>
       </div>
-
     `;
-
 
   } catch (error) {
-
     result.innerHTML = `
-
       <div class="status">
+        <div class="error">❌ 查詢失敗</div>
+        <br>
+        ${escapeHtml(error.message)}
+      </div>
+    `;
+  } finally {
+    button.disabled = false;
+    button.innerText = "🔄 重新查詢目前路況";
+  }
+}
 
-        <div class="error">
-          ❌ 查詢失敗
+
+// ============================================================
+// 排程狀態
+// ============================================================
+
+function scheduleStatus(status) {
+  const map = {
+    pending: ["🟡 等待執行", "badge-pending"],
+    running: ["🔵 執行中", "badge-running"],
+    completed: ["✅ 已完成", "badge-completed"],
+    error: ["❌ 執行失敗", "badge-error"]
+  };
+
+  const item = map[status] || [status || "未知", "badge-pending"];
+  return `<span class="badge ${item[1]}">${item[0]}</span>`;
+}
+
+function scheduleCard(schedule) {
+  const canEdit = schedule.status === "pending" || schedule.status === "error";
+  const canDelete = schedule.status !== "running";
+
+  return `
+    <div class="schedule-card" id="schedule-${schedule.id}">
+      <div class="schedule-top">
+        <div>
+          <div class="schedule-id">排程 ${schedule.id}</div>
+          <div class="schedule-time">
+            📅 ${formatDateMinute(schedule.scheduled_at_taiwan)}
+          </div>
         </div>
 
-        <br>
-
-        ${error.message}
-
+        ${scheduleStatus(schedule.status)}
       </div>
 
+      <div class="muted" style="margin-top:10px;">
+        起點：${escapeHtml(schedule.origin)}<br>
+        目的地：${escapeHtml(schedule.destination)}
+        ${schedule.executed_at_taiwan
+          ? `<br>實際執行：${formatDateTime(schedule.executed_at_taiwan)}`
+          : ""}
+      </div>
+
+      <div class="button-row">
+        ${canEdit
+          ? `<button class="secondary-button small-button" onclick="editSchedule(${schedule.id})">✏️ 修改</button>`
+          : ""}
+
+        ${canDelete
+          ? `<button class="danger-button small-button" onclick="deleteSchedule(${schedule.id})">🗑️ 刪除</button>`
+          : ""}
+      </div>
+    </div>
+  `;
+}
+
+
+// ============================================================
+// 讀取排程
+// ============================================================
+
+async function loadSchedules() {
+  const list = document.getElementById("scheduleList");
+
+  list.innerHTML = `
+    <div class="status loading">正在讀取排程...</div>
+  `;
+
+  try {
+    const response = await fetch(
+      WORKER_URL + "/schedules?nocache=" + Date.now(),
+      { cache: "no-store" }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || "無法讀取排程");
+    }
+
+    cachedSchedules = data.schedules || [];
+
+    if (cachedSchedules.length === 0) {
+      list.innerHTML = `
+        <div class="status empty">目前沒有排程</div>
+      `;
+      return;
+    }
+
+    list.innerHTML = cachedSchedules.map(scheduleCard).join("");
+
+  } catch (error) {
+    list.innerHTML = `
+      <div class="status">
+        <div class="error">❌ 排程讀取失敗</div>
+        <br>${escapeHtml(error.message)}
+      </div>
     `;
+  }
+}
 
-  } finally {
 
-    button.disabled = false;
+// ============================================================
+// 新增 / 修改排程
+// 修改會保留原本排程 ID
+// ============================================================
 
-    button.innerText =
-      "🔄 重新查詢目前路況";
+async function postSchedule(dateTimeValue) {
+  const response = await fetch(
+    WORKER_URL + "/schedules",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        scheduled_at_taiwan: dateTimeValue,
+        origin: FROM,
+        destination: TO
+      })
+    }
+  );
 
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || "新增排程失敗");
   }
 
+  return data;
 }
+
+async function putSchedule(id, dateTimeValue) {
+  const response = await fetch(
+    WORKER_URL + "/schedules",
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: id,
+        scheduled_at_taiwan: dateTimeValue,
+        origin: FROM,
+        destination: TO
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || "修改排程失敗");
+  }
+
+  return data;
+}
+
+async function deleteScheduleRequest(id) {
+  const response = await fetch(
+    WORKER_URL + "/schedules?id=" + encodeURIComponent(id),
+    {
+      method: "DELETE"
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || "刪除排程失敗");
+  }
+
+  return data;
+}
+
+async function saveSchedule() {
+  const input = document.getElementById("scheduleDateTime");
+  const button = document.getElementById("saveScheduleButton");
+  const message = document.getElementById("scheduleMessage");
+
+  const value = input.value;
+
+  if (!value) {
+    message.innerHTML = `<div class="notice">請先選擇年月日、時、分。</div>`;
+    return;
+  }
+
+  button.disabled = true;
+  message.innerHTML = "";
+
+  try {
+    if (editingScheduleId == null) {
+      const data = await postSchedule(value);
+
+      message.innerHTML = `
+        <div class="notice">
+          ✅ 已新增排程 ${data.id}：${formatDateMinute(data.scheduled_at_taiwan)}
+        </div>
+      `;
+    } else {
+      const id = editingScheduleId;
+      const data = await putSchedule(id, value);
+
+      message.innerHTML = `
+        <div class="notice">
+          ✅ 排程 ${id} 已修改為 ${formatDateMinute(data.scheduled_at_taiwan)}。
+        </div>
+      `;
+
+      cancelEditSchedule(false);
+    }
+
+    input.value = taiwanInputValue(5);
+    await loadSchedules();
+
+  } catch (error) {
+    message.innerHTML = `
+      <div class="notice">
+        <span class="error">❌ ${escapeHtml(error.message)}</span>
+      </div>
+    `;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function editSchedule(id) {
+  const schedule = cachedSchedules.find(item => Number(item.id) === Number(id));
+
+  if (!schedule) {
+    alert("找不到這筆排程，請重新整理。");
+    return;
+  }
+
+  if (!(schedule.status === "pending" || schedule.status === "error")) {
+    alert("只有等待中或執行失敗的排程可以修改。");
+    return;
+  }
+
+  editingScheduleId = id;
+
+  document.getElementById("scheduleDateTime").value =
+    toDateTimeLocalValue(schedule.scheduled_at_taiwan);
+
+  document.getElementById("scheduleTitle").innerText =
+    `✏️ 修改排程 ${id}`;
+
+  document.getElementById("saveScheduleButton").innerText =
+    "💾 儲存修改";
+
+  document.getElementById("cancelEditButton").style.display = "inline-block";
+  document.getElementById("schedulePanel").classList.add("editing");
+  document.getElementById("scheduleMessage").innerHTML = "";
+
+  document.getElementById("schedulePanel").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+function cancelEditSchedule(clearMessage = true) {
+  editingScheduleId = null;
+
+  document.getElementById("scheduleTitle").innerText =
+    "🗓️ 新增路況記錄排程";
+
+  document.getElementById("saveScheduleButton").innerText =
+    "＋ 新增排程";
+
+  document.getElementById("cancelEditButton").style.display = "none";
+  document.getElementById("schedulePanel").classList.remove("editing");
+  document.getElementById("scheduleDateTime").value = taiwanInputValue(5);
+
+  if (clearMessage) {
+    document.getElementById("scheduleMessage").innerHTML = "";
+  }
+}
+
+async function deleteSchedule(id) {
+  const schedule = cachedSchedules.find(item => Number(item.id) === Number(id));
+
+  if (!schedule) {
+    alert("找不到這筆排程，請重新整理。");
+    return;
+  }
+
+  if (schedule.status === "running") {
+    alert("這筆排程正在執行，現在不能刪除。");
+    return;
+  }
+
+  const ok = confirm(
+    `確定要刪除排程 ${id}？\n${formatDateMinute(schedule.scheduled_at_taiwan)}`
+  );
+
+  if (!ok) return;
+
+  try {
+    await deleteScheduleRequest(id);
+
+    if (Number(editingScheduleId) === Number(id)) {
+      cancelEditSchedule();
+    }
+
+    await loadSchedules();
+
+  } catch (error) {
+    alert("刪除失敗：" + error.message);
+  }
+}
+
+
+// ============================================================
+// 歷史紀錄
+// ============================================================
+
+function historyCard(item, scheduleMap) {
+  const scheduleId = scheduleMap[item.id] || null;
+
+  return `
+    <div class="history-card">
+      <div class="history-top">
+        <div>
+          <div class="history-time">
+            📅 ${formatDateMinute(item.created_at_taiwan)}
+          </div>
+          ${scheduleId
+            ? `<div class="muted" style="margin-top:5px;">來源：排程 ${scheduleId}</div>`
+            : ""}
+        </div>
+
+        ${item.under_60 === 1
+          ? `<span class="badge badge-completed">60 分鐘內</span>`
+          : `<span class="badge badge-pending">超過 60 分鐘</span>`}
+      </div>
+
+      <div class="history-route-name">
+        🥇 ${escapeHtml(item.fastest_label || "--")}
+      </div>
+
+      <div class="history-big-time">
+        ${item.fastest_minutes ?? "--"} 分鐘
+      </div>
+
+      <div class="arrival">
+        預計抵達：${formatTime(item.fastest_arrival)}
+      </div>
+
+      <div class="info-grid">
+        <div class="info-box">
+          <div class="info-title">距離</div>
+          <div class="info-value">${item.fastest_distance ?? "--"} 公里</div>
+        </div>
+
+        <div class="info-box">
+          <div class="info-title">無車流時間</div>
+          <div class="info-value">${item.fastest_no_traffic ?? "--"} 分鐘</div>
+        </div>
+
+        <div class="info-box">
+          <div class="info-title">交通影響</div>
+          <div class="info-value">+${item.fastest_traffic_effect ?? "--"} 分鐘</div>
+        </div>
+
+        <div class="info-box">
+          <div class="info-title">TomTom 歷史同時段</div>
+          <div class="info-value">${item.fastest_historic ?? "--"} 分鐘</div>
+        </div>
+      </div>
+
+      <div class="history-alt">
+        🥈 ${escapeHtml(item.second_label || "--")}：
+        ${item.second_minutes ?? "--"} 分鐘
+        ${item.second_slower != null ? `（慢 ${item.second_slower} 分）` : ""}
+        <br>
+        🥉 ${escapeHtml(item.third_label || "--")}：
+        ${item.third_minutes ?? "--"} 分鐘
+        ${item.third_slower != null ? `（慢 ${item.third_slower} 分）` : ""}
+      </div>
+
+      <div class="button-row">
+        <button
+          class="danger-button small-button"
+          onclick="deleteHistoryItem(${item.id}, '${String(item.created_at_taiwan || "").replace(/'/g, "\\'")}')">
+          🗑️ 刪除此筆紀錄
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderHistorySummary(items) {
+  const box = document.getElementById("historySummary");
+
+  const valid = items.filter(item => Number.isFinite(Number(item.fastest_minutes)));
+
+  if (valid.length === 0) {
+    box.innerHTML = "";
+    return;
+  }
+
+  const values = valid.map(item => Number(item.fastest_minutes));
+  const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+
+  let fastestItem = valid[0];
+  let slowestItem = valid[0];
+
+  for (const item of valid) {
+    if (Number(item.fastest_minutes) < Number(fastestItem.fastest_minutes)) {
+      fastestItem = item;
+    }
+
+    if (Number(item.fastest_minutes) > Number(slowestItem.fastest_minutes)) {
+      slowestItem = item;
+    }
+  }
+
+  box.innerHTML = `
+    <div class="panel">
+      <div class="panel-title">📊 查詢結果摘要</div>
+
+      <div class="history-summary-grid">
+        <div class="history-summary-box">
+          <div class="muted">平均</div>
+          <div class="value">${avg} 分鐘</div>
+        </div>
+
+        <div class="history-summary-box">
+          <div class="muted">最快</div>
+          <div class="value">${fastestItem.fastest_minutes} 分鐘</div>
+          <div class="muted">${formatDateMinute(fastestItem.created_at_taiwan)}</div>
+        </div>
+
+        <div class="history-summary-box">
+          <div class="muted">最慢</div>
+          <div class="value">${slowestItem.fastest_minutes} 分鐘</div>
+          <div class="muted">${formatDateMinute(slowestItem.created_at_taiwan)}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function fetchHistory(url) {
+  const list = document.getElementById("historyList");
+  const summary = document.getElementById("historySummary");
+
+  summary.innerHTML = "";
+  list.innerHTML = `
+    <div class="status loading">正在讀取歷史紀錄...</div>
+  `;
+
+  try {
+    const [historyResponse, schedulesResponse] = await Promise.all([
+      fetch(url, { cache: "no-store" }),
+      fetch(WORKER_URL + "/schedules?nocache=" + Date.now(), { cache: "no-store" })
+    ]);
+
+    const historyData = await historyResponse.json();
+    const schedulesData = await schedulesResponse.json();
+
+    if (!historyResponse.ok || !historyData.success) {
+      throw new Error(historyData.error || "無法讀取歷史紀錄");
+    }
+
+    const items = historyData.history || [];
+    const schedules = schedulesData.success ? (schedulesData.schedules || []) : [];
+
+    const scheduleMap = {};
+
+    for (const schedule of schedules) {
+      if (schedule.traffic_log_id != null) {
+        scheduleMap[schedule.traffic_log_id] = schedule.id;
+      }
+    }
+
+    if (items.length === 0) {
+      list.innerHTML = `
+        <div class="status empty">這個範圍目前沒有歷史紀錄</div>
+      `;
+      return;
+    }
+
+    renderHistorySummary(items);
+    list.innerHTML = items.map(item => historyCard(item, scheduleMap)).join("");
+
+  } catch (error) {
+    list.innerHTML = `
+      <div class="status">
+        <div class="error">❌ 歷史紀錄讀取失敗</div>
+        <br>${escapeHtml(error.message)}
+      </div>
+    `;
+  }
+}
+
+function loadHistoryByDate() {
+  const date = document.getElementById("historyDate").value;
+
+  if (!date) {
+    alert("請先選擇日期。");
+    return;
+  }
+
+  const url =
+    WORKER_URL +
+    "/history?date=" + encodeURIComponent(date) +
+    "&limit=500&nocache=" + Date.now();
+
+  fetchHistory(url);
+}
+
+function loadRecentHistory() {
+  const url =
+    WORKER_URL +
+    "/history?limit=50&nocache=" + Date.now();
+
+  fetchHistory(url);
+}
+
+
+
+async function deleteHistoryRequest(queryString) {
+  const response = await fetch(
+    WORKER_URL + "/history?" + queryString,
+    {
+      method: "DELETE"
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || "刪除歷史紀錄失敗");
+  }
+
+  return data;
+}
+
+async function deleteHistoryItem(id, timeString) {
+  const ok = confirm(
+    `確定要刪除這筆歷史路況？\n${formatDateMinute(timeString)}\n\n刪除後無法復原。`
+  );
+
+  if (!ok) return;
+
+  try {
+    await deleteHistoryRequest(
+      "id=" + encodeURIComponent(id)
+    );
+
+    const date = document.getElementById("historyDate").value;
+
+    if (date) {
+      await fetchHistory(
+        WORKER_URL +
+        "/history?date=" + encodeURIComponent(date) +
+        "&limit=500&nocache=" + Date.now()
+      );
+    } else {
+      await loadRecentHistory();
+    }
+
+    await loadSchedules();
+
+  } catch (error) {
+    alert("刪除失敗：" + error.message);
+  }
+}
+
+async function deleteHistoryByDate() {
+  const date = document.getElementById("historyDate").value;
+
+  if (!date) {
+    alert("請先選擇要刪除的日期。");
+    return;
+  }
+
+  const ok = confirm(
+    `確定要刪除 ${date.replace(/-/g, "/")} 的全部歷史路況紀錄？\n\n刪除後無法復原。`
+  );
+
+  if (!ok) return;
+
+  try {
+    const data = await deleteHistoryRequest(
+      "date=" + encodeURIComponent(date)
+    );
+
+    alert(`已刪除 ${data.deleted_count ?? 0} 筆歷史紀錄。`);
+
+    await loadHistoryByDate();
+    await loadSchedules();
+
+  } catch (error) {
+    alert("刪除失敗：" + error.message);
+  }
+}
+
+
+// ============================================================
+// 頁面載入
+// ============================================================
+
 window.addEventListener("load", function () {
+  document.getElementById("scheduleDateTime").value = taiwanInputValue(5);
+  document.getElementById("historyDate").value = todayTaiwan();
+
   loadTraffic();
+  loadSchedules();
+  loadRecentHistory();
 });
 </script>
 
