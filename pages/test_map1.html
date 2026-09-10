@@ -744,7 +744,9 @@ async function loadTraffic() {
   }
 
 }
-
+window.addEventListener("load", function () {
+  loadTraffic();
+});
 </script>
 
 </body>
