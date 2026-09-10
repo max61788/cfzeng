@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>新竹 → 南港 即時路況</title>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   "Microsoft JhengHei", Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+      color: #222;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 26px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .query-button {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      background: #1976d2;
+      color: white;
+      margin-bottom: 18px;
+    }
+
+    .query-button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .status {
+      background: white;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .fresh {
+      color: #16833b;
+      font-weight: bold;
+    }
+
+    .error {
+      color: #c62828;
+      font-weight: bold;
+    }
+
+    .route {
+      background: white;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .route h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .route-name {
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 1.5;
+      margin-bottom: 15px;
+    }
+
+    .big-time {
+      font-size: 32px;
+      font-weight: bold;
+      margin: 8px 0;
+    }
+
+    .arrival {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 14px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .info-box {
+      background: #f7f7f7;
+      border-radius: 9px;
+      padding: 10px;
+    }
+
+    .info-title {
+      font-size: 13px;
+      color: #777;
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .difference {
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    .summary {
+      background: white;
+      border-radius: 14px;
+      padding: 18px;
+      margin-top: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .summary h2 {
+      margin-top: 0;
+    }
+
+    .yes {
+      color: #16833b;
+      font-weight: bold;
+    }
+
+    .no {
+      color: #c62828;
+      font-weight: bold;
+    }
+
+    .recommend {
+      margin-top: 14px;
+      padding: 13px;
+      background: #f1f6ff;
+      border-radius: 10px;
+      line-height: 1.6;
+      font-weight: bold;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 30px;
+      font-size: 18px;
+    }
+
+    .roads {
+      margin-top: 14px;
+      font-size: 13px;
+      color: #777;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 12px;
+      }
+
+      h1 {
+        font-size: 23px;
+      }
+
+      .big-time {
+        font-size: 29px;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+  <h1>🚗 新竹 → 南港</h1>
+
+  <div class="subtitle">
+    即時路況與預估行車時間
+  </div>
+
+  <button
+    id="queryButton"
+    class="query-button"
+    onclick="loadTraffic()">
+    🔄 查詢目前路況
+  </button>
+
+  <div id="result">
+    <div class="status">
+      按「查詢目前路況」取得最新資料
+    </div>
+  </div>
+
+</div>
+
+
+<script>
+
+const WORKER_URL =
+  "https://map-eta.ssss912042.workers.dev/";
+
+const FROM =
+  "24.816180,120.966055";
+
+const TO =
+  "25.057046,121.619954";
+
+
+// ============================================================
+// 日期 + 時間
+// 例如：2026/09/10 16:07:53
+// ============================================================
+
+function formatDateTime(timeString) {
+
+  if (!timeString) {
+    return "--";
+  }
+
+  const d = new Date(timeString);
+
+  return d.toLocaleString(
+    "zh-TW",
+    {
+      timeZone: "Asia/Taipei",
+
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+
+      hour12: false
+    }
+  );
+}
+
+
+// ============================================================
+// 只顯示時間
+// 例如：17:23
+// ============================================================
+
+function formatTime(timeString) {
+
+  if (!timeString) {
+    return "--";
+  }
+
+  const d = new Date(timeString);
+
+  return d.toLocaleTimeString(
+    "zh-TW",
+    {
+      timeZone: "Asia/Taipei",
+
+      hour: "2-digit",
+      minute: "2-digit",
+
+      hour12: false
+    }
+  );
+}
+
+
+// ============================================================
+// 計算資料距離現在幾秒
+// ============================================================
+
+function getAgeSeconds(timeString) {
+
+  if (!timeString) {
+    return 999999;
+  }
+
+  const dataTime =
+    new Date(timeString).getTime();
+
+  const now =
+    Date.now();
+
+  return Math.abs(
+    now - dataTime
+  ) / 1000;
+}
+
+
+// ============================================================
+// 建立路線卡片
+// ============================================================
+
+function routeCard(
+  route,
+  medal,
+  title,
+  fastest = false
+) {
+
+  if (!route) {
+    return "";
+  }
+
+  let difference = "";
+
+  if (
+    !fastest &&
+    route.slower_by_minutes != null
+  ) {
+
+    difference = `
+      <div class="difference">
+        ⏱ 比最快路線慢
+        ${route.slower_by_minutes} 分鐘
+      </div>
+    `;
+  }
+
+
+  let roadsText = "";
+
+  if (
+    route.roads &&
+    route.roads.length > 0
+  ) {
+
+    roadsText = `
+      <div class="roads">
+        經過：
+        ${route.roads.join(" → ")}
+      </div>
+    `;
+  }
+
+
+  return `
+
+    <div class="route">
+
+      <h2>
+        ${medal} ${title}
+      </h2>
+
+      <div class="route-name">
+        ${route.label}
+      </div>
+
+
+      <div class="big-time">
+        ${route.travel_minutes} 分鐘
+      </div>
+
+
+      <div class="arrival">
+        預計抵達：
+        ${formatTime(route.arrival_time)}
+      </div>
+
+
+      <div class="info-grid">
+
+        <div class="info-box">
+
+          <div class="info-title">
+            距離
+          </div>
+
+          <div class="info-value">
+            ${route.distance_km} 公里
+          </div>
+
+        </div>
+
+
+        <div class="info-box">
+
+          <div class="info-title">
+            無車流時間
+          </div>
+
+          <div class="info-value">
+            ${route.no_traffic_minutes ?? "--"} 分鐘
+          </div>
+
+        </div>
+
+
+        <div class="info-box">
+
+          <div class="info-title">
+            目前交通影響
+          </div>
+
+          <div class="info-value">
+            +${route.traffic_effect_minutes ?? "--"} 分鐘
+          </div>
+
+        </div>
+
+
+        <div class="info-box">
+
+          <div class="info-title">
+            歷史同時段
+          </div>
+
+          <div class="info-value">
+            ${route.historic_traffic_minutes ?? "--"} 分鐘
+          </div>
+
+        </div>
+
+      </div>
+
+
+      ${difference}
+
+      ${roadsText}
+
+    </div>
+
+  `;
+}
+
+
+// ============================================================
+// 查詢路況
+// ============================================================
+
+async function loadTraffic() {
+
+  const result =
+    document.getElementById(
+      "result"
+    );
+
+  const button =
+    document.getElementById(
+      "queryButton"
+    );
+
+
+  button.disabled = true;
+
+  button.innerText =
+    "⏳ 正在查詢最新路況...";
+
+
+  result.innerHTML = `
+    <div class="status loading">
+      正在取得最新路況...
+    </div>
+  `;
+
+
+  // ==========================================================
+  // 每次都產生新的時間戳
+  // ==========================================================
+
+  const nocache =
+    Date.now();
+
+
+  const url =
+    WORKER_URL +
+    "?from=" +
+    encodeURIComponent(FROM) +
+    "&to=" +
+    encodeURIComponent(TO) +
+    "&nocache=" +
+    nocache;
+
+
+  try {
+
+    // ========================================================
+    // 呼叫 Cloudflare Worker
+    // ========================================================
+
+    const response =
+      await fetch(
+        url,
+        {
+          method: "GET",
+          cache: "no-store"
+        }
+      );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "Worker 回傳錯誤：" +
+        response.status
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    if (!data.success) {
+
+      throw new Error(
+        data.error ||
+        "路況查詢失敗"
+      );
+
+    }
+
+
+    // ========================================================
+    // 檢查資料新鮮度
+    // ========================================================
+
+    const generatedAge =
+      getAgeSeconds(
+        data.generated_at_taiwan
+      );
+
+
+    const departureAge =
+      getAgeSeconds(
+        data.fastest?.departure_time
+      );
+
+
+    if (
+      generatedAge > 10 ||
+      departureAge > 10
+    ) {
+
+      throw new Error(
+        "取得的資料不是最新資料。" +
+        "資料時間與現在相差超過 10 秒，請重新查詢。"
+      );
+
+    }
+
+
+    // ========================================================
+    // 取得三條路線
+    // ========================================================
+
+    const fastest =
+      data.fastest;
+
+    const second =
+      data.second_fastest;
+
+    const third =
+      data.third_fastest;
+
+
+    // ========================================================
+    // 60分鐘判斷
+    // ========================================================
+
+    let under60Html = "";
+
+    if (
+      data.under_60_minutes
+    ) {
+
+      under60Html = `
+        <span class="yes">
+          ✅ 有機會
+        </span>
+      `;
+
+    } else {
+
+      under60Html = `
+        <span class="no">
+          ❌ 目前不行
+        </span>
+      `;
+
+    }
+
+
+    // ========================================================
+    // 建議文字
+    // ========================================================
+
+    let recommendation = "";
+
+    if (
+      fastest &&
+      second
+    ) {
+
+      recommendation = `
+        現在建議走
+        「${fastest.label}」，
+        約 ${fastest.travel_minutes} 分鐘，
+        預計 ${formatTime(fastest.arrival_time)} 抵達。
+      `;
+
+
+      if (
+        second.slower_by_minutes <= 5
+      ) {
+
+        recommendation += `
+          第二條路線只慢
+          ${second.slower_by_minutes} 分鐘，
+          可作為備用路線。
+        `;
+
+      }
+
+    }
+
+
+    // ========================================================
+    // 顯示
+    // ========================================================
+
+    result.innerHTML = `
+
+      <div class="status">
+
+        🕒 資料時間：
+        <strong>
+          ${formatDateTime(
+            data.generated_at_taiwan
+          )}
+        </strong>
+
+        <br><br>
+
+        <span class="fresh">
+          ● 即時資料
+        </span>
+
+        （約 ${Math.round(generatedAge)} 秒前）
+
+      </div>
+
+
+      ${routeCard(
+        fastest,
+        "🥇",
+        "最快路線",
+        true
+      )}
+
+
+      ${routeCard(
+        second,
+        "🥈",
+        "第二快",
+        false
+      )}
+
+
+      ${routeCard(
+        third,
+        "🥉",
+        "第三快",
+        false
+      )}
+
+
+      <div class="summary">
+
+        <h2>
+          📊 路況結論
+        </h2>
+
+
+        <p>
+          60 分鐘內抵達：
+          ${under60Html}
+        </p>
+
+
+        <div class="recommend">
+          ${recommendation}
+        </div>
+
+      </div>
+
+    `;
+
+
+  } catch (error) {
+
+    result.innerHTML = `
+
+      <div class="status">
+
+        <div class="error">
+          ❌ 查詢失敗
+        </div>
+
+        <br>
+
+        ${error.message}
+
+      </div>
+
+    `;
+
+  } finally {
+
+    button.disabled = false;
+
+    button.innerText =
+      "🔄 重新查詢目前路況";
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>
