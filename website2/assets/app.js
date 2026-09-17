@@ -30,12 +30,21 @@ function showDay(value, shouldScroll = true) {
 select.addEventListener('change', () => showDay(select.value));
 prev.addEventListener('click', () => { const i=order.indexOf(select.value); if(i>0) showDay(order[i-1]); });
 next.addEventListener('click', () => { const i=order.indexOf(select.value); if(i>=0&&i<order.length-1) showDay(order[i+1]); });
-expand.addEventListener('click', () => {
-  const visible = cards.filter(card => !card.hidden);
-  const shouldOpen = visible.some(card => !card.querySelector('details').open);
-  visible.forEach(card => card.querySelector('details').open = shouldOpen);
-  expand.textContent = shouldOpen ? '收合說明' : '展開說明';
-});
+if (expand) {
+  expand.addEventListener('click', () => {
+    const visible = cards.filter(card => !card.hidden);
+    const details = visible
+      .map(card => card.querySelector('details'))
+      .filter(Boolean);
+    const shouldOpen = details.some(item => !item.open);
+
+    details.forEach(item => {
+      item.open = shouldOpen;
+    });
+
+    expand.textContent = shouldOpen ? '收合說明' : '展開說明';
+  });
+}
 window.addEventListener('hashchange', () => showDay(location.hash.slice(1) || 'all', false));
 showDay(location.hash.slice(1) || 'all', false);
 
@@ -57,7 +66,11 @@ function setLightboxImage(index) {
 
 function openLightbox(index) {
   setLightboxImage(index);
-  lightbox.showModal();
+  if (typeof lightbox.showModal === 'function') {
+    lightbox.showModal();
+  } else {
+    lightbox.setAttribute('open', '');
+  }
 }
 
 galleryFigures.forEach((figure, index) => {
