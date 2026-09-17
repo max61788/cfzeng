@@ -19,7 +19,15 @@ function showDay(value, shouldScroll = true) {
   const index = order.indexOf(valid);
   prev.disabled = valid === 'all' || index === 0;
   next.disabled = valid === 'all' || index === order.length - 1;
-  history.replaceState(null, '', valid === 'all' ? location.pathname : `#${valid}`);
+  // iPhone Safari 直接從「檔案」開啟網頁時，replaceState 可能因 file://
+  // 權限限制拋出 SecurityError。網址更新失敗不應中斷後續的圖片燈箱。
+  try {
+    if (location.protocol === 'http:' || location.protocol === 'https:') {
+      history.replaceState(null, '', valid === 'all' ? location.pathname : `#${valid}`);
+    }
+  } catch (error) {
+    console.warn('無法更新目前行程網址：', error);
+  }
   if (shouldScroll) {
     dayView.scrollIntoView({behavior:'smooth', block:'start'});
     const active = document.querySelector(valid === 'all' ? '#day1' : `#${valid}`);
