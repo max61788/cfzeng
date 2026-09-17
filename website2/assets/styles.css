@@ -238,6 +238,11 @@ main {
   margin-top: 3px;
 }
 
+#viewStatus {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
 .label {
   display: inline-block;
   background: var(--mint);
